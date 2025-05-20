@@ -1,0 +1,112 @@
+﻿// Systems/RenderSystem.cs
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using ECS_Example.Components;
+using ECS_Example.Entities;
+
+namespace ECS_Example.Systems
+{
+    public class RenderSystem
+    {
+        private SpriteBatch _spriteBatch;
+        private Texture2D _whiteTexture;
+        private bool _debug = true;
+
+        public RenderSystem(SpriteBatch spriteBatch, GraphicsDevice graphicsDevice)
+        {
+            _spriteBatch = spriteBatch;
+
+            // Create a 1x1 white texture for drawing shapes
+            _whiteTexture = new Texture2D(graphicsDevice, 1, 1);
+            _whiteTexture.SetData(new[] { Color.White });
+        }
+
+        public void Draw(World world)
+        {
+            _spriteBatch.Begin();
+
+            foreach (var entity in world.GetEntities())
+            {
+                if (world.TryGetComponent<Position>(entity, out var position) &&
+                    world.TryGetComponent<Shape>(entity, out var shape))
+                {
+                    // Check if entity should be visible
+                    bool shouldDraw = true;
+                    if (world.TryGetComponent<FlashEffect>(entity, out var flash))
+                    {
+                        shouldDraw = flash.IsVisible;
+                    }
+
+                    if (shouldDraw)
+                    {
+
+                        DrawShape(position, shape);
+
+                        // DEBUG: Draw collider bounds in red
+                        if (_debug && world.TryGetComponent<Collider>(entity, out var collider))
+                        {
+                            _spriteBatch.Draw(
+                                _whiteTexture,
+                                new Rectangle(
+                                    (int)position.Value.X + collider.Bounds.X,
+                                    (int)position.Value.Y + collider.Bounds.Y,
+                                    collider.Bounds.Width,
+                                    1  // Top edge
+                                ),
+                                Color.Red * 0.5f
+                            );
+                            _spriteBatch.Draw(
+                                _whiteTexture,
+                                new Rectangle(
+                                    (int)position.Value.X + collider.Bounds.X,
+                                    (int)position.Value.Y + collider.Bounds.Y + collider.Bounds.Height - 1,
+                                    collider.Bounds.Width,
+                                    1  // Bottom edge
+                                ),
+                                Color.Red * 0.5f
+                            );
+                        }
+                    }
+
+
+                }
+            }
+
+            _spriteBatch.End();
+        }
+
+        private void DrawShape(Position position, Shape shape)
+        {
+            switch (shape.Type)
+            {
+                case Shape.ShapeType.Rectangle:
+                    _spriteBatch.Draw(
+                        _whiteTexture,
+                        new Rectangle(
+                            (int)position.Value.X,
+                            (int)position.Value.Y,
+                            (int)shape.Size.X,
+                            (int)shape.Size.Y
+                        ),
+                        shape.Color
+                    );
+                    break;
+
+                case Shape.ShapeType.Circle:
+                    // For now, we'll draw circles as squares
+                    // (proper circle drawing requires more complex code)
+                    _spriteBatch.Draw(
+                        _whiteTexture,
+                        new Rectangle(
+                            (int)(position.Value.X - shape.Size.X / 2),
+                            (int)(position.Value.Y - shape.Size.X / 2),
+                            (int)shape.Size.X,
+                            (int)shape.Size.X
+                        ),
+                        shape.Color
+                    );
+                    break;
+            }
+        }
+    }
+}

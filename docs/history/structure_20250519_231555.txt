@@ -1,0 +1,1756 @@
+Scan Report
+===========
+Date: 2025-05-19 23:15:55
+Source Directory: A:\Projects\The Game Lab\MonoGame\ECS-Example\ECS-Example
+Output File: A:\Projects\The Game Lab\MonoGame\ECS-Example\ECS-Example\docs\history\structure_20250519_231555.txt
+
+Ignored Patterns:
+================
+- *build*
+- *gradle
+- .gitignore
+- README.md
+- path_walker.py
+
+Directory Structure:
+===================
+
+ECS-Example/
+  Game1.cs
+  Program.cs
+  World.cs
+  .config/
+  .vscode/
+  bin/
+    Debug/
+      net6.0/
+        runtimes/
+          linux-x64/
+            native/
+          osx/
+            native/
+          win-x64/
+            native/
+          win-x86/
+            native/
+  Components/
+    Bounceable.cs
+    Collider.cs
+    Damager.cs
+    FlashEffect.cs
+    Gravity.cs
+    Health.cs
+    Input.cs
+    Invulnerable.cs
+    InvulnerableSettings.cs
+    Jump.cs
+    Patrol.cs
+    PlayerController.cs
+    Position.cs
+    Shape.cs
+    StunSettings.cs
+    Stunned.cs
+    Velocity.cs
+  Content/
+    bin/
+      DesktopGL/
+        Content/
+    obj/
+      DesktopGL/
+        net6.0/
+          Content/
+  docs/
+    history/
+  Entities/
+    Entity.cs
+  Factories/
+    EnemyFactory.cs
+    PlayerFactory.cs
+  obj/
+    Debug/
+      net6.0/
+        .NETCoreApp,Version=v6.0.AssemblyAttributes.cs
+        ECS-Example.AssemblyInfo.cs
+        ref/
+        refint/
+  Systems/
+    CollisionSystem.cs
+    DamageSystem.cs
+    FlashSystem.cs
+    GravitySystem.cs
+    HealthSystem.cs
+    InputSystem.cs
+    JumpSystem.cs
+    MovementSystem.cs
+    PatrolSystem.cs
+    PlayerMovementSystem.cs
+    RenderSystem.cs
+    StunSystem.cs
+
+
+File Contents:
+=============
+
+
+--- Game1.cs ---
+﻿// Game1.cs
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
+using ECS_Example.Components;
+using ECS_Example.Systems;
+using ECS_Example.Factories;
+
+namespace ECS_Example
+{
+    public class Game1 : Game
+    {
+        private GraphicsDeviceManager _graphics;
+        private SpriteBatch _spriteBatch;
+
+        private World _world;
+        private RenderSystem _renderSystem;
+
+        private MovementSystem _movementSystem;
+        private InputSystem _inputSystem;
+
+        private GravitySystem _gravitySystem;
+        private CollisionSystem _collisionSystem;
+
+        private PlayerMovementSystem _playerMovementSystem;
+        private JumpSystem _jumpSystem;
+
+        // v-patrol
+        private PatrolSystem _patrolSystem;
+
+        // v-health
+        private HealthSystem _healthSystem;
+        private DamageSystem _damageSystem;
+
+        // v-feedback
+        private FlashSystem _flashSystem;
+        private StunSystem _stunSystem;
+
+        public Game1()
+        {
+            _graphics = new GraphicsDeviceManager(this);
+            Content.RootDirectory = "Content";
+            IsMouseVisible = true;
+        }
+
+        protected override void Initialize()
+        {
+            _world = new World();
+
+            var playerEntity = PlayerFactory.CreatePlayer(_world, new Vector2(100, 300));
+
+            // Create the ground
+            var groundEntity = _world.CreateEntity();
+            _world.AddComponent(groundEntity, new Position(0, 450));
+            _world.AddComponent(groundEntity, new Shape(
+                Shape.ShapeType.Rectangle,
+                Color.Brown,
+                new Vector2(800, 50)
+            ));
+            _world.AddComponent(groundEntity, new Collider(
+                new Rectangle(0, 0, 800, 50),
+                Collider.ColliderType.Static
+            ));
+
+            // Create some platforms
+            CreatePlatform(200, 350, 100, 20);
+            CreatePlatform(400, 250, 150, 20);
+            CreatePlatform(600, 350, 100, 20);
+
+            CreatePlatform(200, 425, 100, 20);
+
+            CreatePlatform(600, 425, 100, 20);
+
+            // Goomba-style enemy (will walk off edges) - Red
+            EnemyFactory.CreatePatrolEnemy(_world, new Vector2(300, 400), 100, false, Color.Red);
+
+            // Koopa-style enemy (avoids edges) - Orange
+            EnemyFactory.CreatePatrolEnemy(_world, new Vector2(200, 300), 100, true, Color.Orange);
+            EnemyFactory.CreatePatrolEnemy(_world, new Vector2(400, 200), 100, true, Color.Orange);
+
+            // Initialize systems
+            _playerMovementSystem = new PlayerMovementSystem();
+            _jumpSystem = new JumpSystem();
+
+            // Initialize the patrol system
+            _patrolSystem = new PatrolSystem();
+
+            _movementSystem = new MovementSystem();
+            _inputSystem = new InputSystem();
+            _gravitySystem = new GravitySystem();
+            _collisionSystem = new CollisionSystem();
+
+            _healthSystem = new HealthSystem();
+            _damageSystem = new DamageSystem();
+
+            _flashSystem = new FlashSystem();
+            _stunSystem = new StunSystem();
+
+            base.Initialize();
+        }
+
+        private void CreatePlatform(float x, float y, float width, float height)
+        {
+            var platform = _world.CreateEntity();
+            _world.AddComponent(platform, new Position(x, y));
+            _world.AddComponent(platform, new Shape(
+                Shape.ShapeType.Rectangle,
+                Color.Gray,
+                new Vector2(width, height)
+            ));
+            _world.AddComponent(platform, new Collider(
+                new Rectangle(0, 0, (int)width, (int)height),
+                Collider.ColliderType.Static
+            ));
+        }
+
+        protected override void LoadContent()
+        {
+            _spriteBatch = new SpriteBatch(GraphicsDevice);
+            _renderSystem = new RenderSystem(_spriteBatch, GraphicsDevice);
+        }
+
+        protected override void Update(GameTime gameTime)
+        {
+            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed ||
+                Keyboard.GetState().IsKeyDown(Keys.Escape))
+                Exit();
+
+            float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+            _playerMovementSystem.Update(_world);
+            _jumpSystem.Update(_world);
+
+            _patrolSystem.Update(_world);
+
+            _inputSystem.Update(_world);
+            _gravitySystem.Update(_world, deltaTime);
+            _movementSystem.Update(_world, deltaTime);
+            _collisionSystem.Update(_world);
+
+            _damageSystem.Update(_world);  // Check for damage after physics
+            _healthSystem.Update(_world, deltaTime);  // Handle health and death
+
+            _flashSystem.Update(_world, deltaTime);
+            _stunSystem.Update(_world, deltaTime);
+
+            base.Update(gameTime);
+        }
+
+        protected override void Draw(GameTime gameTime)
+        {
+            GraphicsDevice.Clear(Color.CornflowerBlue);
+
+            _renderSystem.Draw(_world);
+
+            base.Draw(gameTime);
+        }
+    }
+}
+
+--- Program.cs ---
+﻿
+using var game = new ECS_Example.Game1();
+game.Run();
+
+
+--- World.cs ---
+﻿// World.cs
+using System.Collections.Generic;
+using ECS_Example.Entities;
+using ECS_Example.Components;
+
+namespace ECS_Example
+{
+    public class World
+    {
+        private List<Entity> _entities = new List<Entity>();
+        private Dictionary<int, Position> _positions = new Dictionary<int, Position>();
+        private Dictionary<int, Shape> _shapes = new Dictionary<int, Shape>();
+        private Dictionary<int, Velocity> _velocities = new Dictionary<int, Velocity>();
+        private Dictionary<int, Input> _inputs = new Dictionary<int, Input>();
+        private Dictionary<int, Gravity> _gravities = new Dictionary<int, Gravity>();
+        private Dictionary<int, Collider> _colliders = new Dictionary<int, Collider>();
+        private Dictionary<int, Jump> _jumps = new Dictionary<int, Jump>();
+        private Dictionary<int, PlayerController> _playerControllers = new Dictionary<int, PlayerController>();
+        // v-patrol
+        private Dictionary<int, Patrol> _patrols = new Dictionary<int, Patrol>();
+
+        // v-health
+        private Dictionary<int, Health> _healths = new Dictionary<int, Health>();
+        private Dictionary<int, Damager> _damagers = new Dictionary<int, Damager>();
+        private Dictionary<int, Bounceable> _bounceables = new Dictionary<int, Bounceable>();
+        private Dictionary<int, Invulnerable> _invulnerables = new Dictionary<int, Invulnerable>();
+
+        // v-feedback
+        private Dictionary<int, FlashEffect> _flashEffects = new Dictionary<int, FlashEffect>();
+        private Dictionary<int, Stunned> _stunnedStates = new Dictionary<int, Stunned>();
+        private Dictionary<int, InvulnerableSettings> _invulnerableSettings = new Dictionary<int, InvulnerableSettings>();
+        private Dictionary<int, StunSettings> _stunSettings = new Dictionary<int, StunSettings>();
+
+        public Entity CreateEntity()
+        {
+            var entity = new Entity();
+            _entities.Add(entity);
+            return entity;
+        }
+
+        public void RemoveEntity(Entity entity)
+        {
+            _entities.Remove(entity);
+            // Remove all components for this entity
+            _positions.Remove(entity.Id);
+            _shapes.Remove(entity.Id);
+            _velocities.Remove(entity.Id);
+            _inputs.Remove(entity.Id);
+            _gravities.Remove(entity.Id);
+            _colliders.Remove(entity.Id);
+            _jumps.Remove(entity.Id);
+            _playerControllers.Remove(entity.Id);
+            _patrols.Remove(entity.Id);
+            _healths.Remove(entity.Id);
+            _damagers.Remove(entity.Id);
+            _bounceables.Remove(entity.Id);
+            _invulnerables.Remove(entity.Id);
+            _flashEffects.Remove(entity.Id);
+            _stunnedStates.Remove(entity.Id);
+            _invulnerableSettings.Remove(entity.Id);
+            _stunSettings.Remove(entity.Id);
+        }
+
+        public void AddComponent<T>(Entity entity, T component)
+        {
+            if (typeof(T) == typeof(Position))
+                _positions[entity.Id] = (Position)(object)component;
+            else if (typeof(T) == typeof(Shape))
+                _shapes[entity.Id] = (Shape)(object)component;
+            else if (typeof(T) == typeof(Velocity))
+                _velocities[entity.Id] = (Velocity)(object)component;
+            else if (typeof(T) == typeof(Input))
+                _inputs[entity.Id] = (Input)(object)component;
+            else if (typeof(T) == typeof(Gravity))
+                _gravities[entity.Id] = (Gravity)(object)component;
+            else if (typeof(T) == typeof(Collider))
+                _colliders[entity.Id] = (Collider)(object)component;
+            else if (typeof(T) == typeof(Jump))
+                _jumps[entity.Id] = (Jump)(object)component;
+            else if (typeof(T) == typeof(PlayerController))
+                _playerControllers[entity.Id] = (PlayerController)(object)component;
+            else if (typeof(T) == typeof(Patrol))
+                _patrols[entity.Id] = (Patrol)(object)component;
+            else if (typeof(T) == typeof(Health))
+                _healths[entity.Id] = (Health)(object)component;
+            else if (typeof(T) == typeof(Damager))
+                _damagers[entity.Id] = (Damager)(object)component;
+            else if (typeof(T) == typeof(Bounceable))
+                _bounceables[entity.Id] = (Bounceable)(object)component;
+            else if (typeof(T) == typeof(Invulnerable))
+                _invulnerables[entity.Id] = (Invulnerable)(object)component;
+            else if (typeof(T) == typeof(FlashEffect))
+                _flashEffects[entity.Id] = (FlashEffect)(object)component;
+            else if (typeof(T) == typeof(Stunned))
+                _stunnedStates[entity.Id] = (Stunned)(object)component;
+            else if (typeof(T) == typeof(InvulnerableSettings))
+                _invulnerableSettings[entity.Id] = (InvulnerableSettings)(object)component;
+            else if (typeof(T) == typeof(StunSettings))
+                _stunSettings[entity.Id] = (StunSettings)(object)component;
+
+        }
+
+        public void RemoveComponent<T>(Entity entity)
+        {
+            if (typeof(T) == typeof(Invulnerable))
+                _invulnerables.Remove(entity.Id);
+            else if (typeof(T) == typeof(FlashEffect))
+                _flashEffects.Remove(entity.Id);
+            else if (typeof(T) == typeof(Stunned))
+                _stunnedStates.Remove(entity.Id);
+            else if (typeof(T) == typeof(InvulnerableSettings))
+                _invulnerableSettings.Remove(entity.Id);
+        }
+
+        public bool TryGetComponent<T>(Entity entity, out T component)
+        {
+            component = default(T);
+
+            if (typeof(T) == typeof(Position) && _positions.TryGetValue(entity.Id, out var position))
+            {
+                component = (T)(object)position;
+                return true;
+            }
+            else if (typeof(T) == typeof(Shape) && _shapes.TryGetValue(entity.Id, out var shape))
+            {
+                component = (T)(object)shape;
+                return true;
+            }
+            else if (typeof(T) == typeof(Velocity) && _velocities.TryGetValue(entity.Id, out var velocity))
+            {
+                component = (T)(object)velocity;
+                return true;
+            }
+            else if (typeof(T) == typeof(Input) && _inputs.TryGetValue(entity.Id, out var inputComp))
+            {
+                component = (T)(object)inputComp;
+                return true;
+            }
+            else if (typeof(T) == typeof(Gravity) && _gravities.TryGetValue(entity.Id, out var gravity))
+            {
+                component = (T)(object)gravity;
+                return true;
+            }
+            else if (typeof(T) == typeof(Collider) && _colliders.TryGetValue(entity.Id, out var collider))
+            {
+                component = (T)(object)collider;
+                return true;
+            }
+            else if (typeof(T) == typeof(Jump) && _jumps.TryGetValue(entity.Id, out var jump))
+            {
+                component = (T)(object)jump;
+                return true;
+            }
+            else if (typeof(T) == typeof(PlayerController) && _playerControllers.TryGetValue(entity.Id, out var controller))
+            {
+                component = (T)(object)controller;
+                return true;
+            }
+            else if (typeof(T) == typeof(Patrol) && _patrols.TryGetValue(entity.Id, out var patrol))
+            {
+                component = (T)(object)patrol;
+                return true;
+            }
+            else if (typeof(T) == typeof(Health) && _healths.TryGetValue(entity.Id, out var health))
+            {
+                component = (T)(object)health;
+                return true;
+            }
+            else if (typeof(T) == typeof(Damager) && _damagers.TryGetValue(entity.Id, out var damager))
+            {
+                component = (T)(object)damager;
+                return true;
+            }
+            else if (typeof(T) == typeof(Bounceable) && _bounceables.TryGetValue(entity.Id, out var bounceable))
+            {
+                component = (T)(object)bounceable;
+                return true;
+            }
+            else if (typeof(T) == typeof(Invulnerable) && _invulnerables.TryGetValue(entity.Id, out var invulnerable))
+            {
+                component = (T)(object)invulnerable;
+                return true;
+            }
+            else if (typeof(T) == typeof(FlashEffect) && _flashEffects.TryGetValue(entity.Id, out var flashEffect))
+            {
+                component = (T)(object)flashEffect;
+                return true;
+            }
+            else if (typeof(T) == typeof(Stunned) && _stunnedStates.TryGetValue(entity.Id, out var stunned))
+            {
+                component = (T)(object)stunned;
+                return true;
+            }
+            else if (typeof(T) == typeof(InvulnerableSettings) && _invulnerableSettings.TryGetValue(entity.Id, out var invulnerableSettings))
+            {
+                component = (T)(object)invulnerableSettings;
+                return true;
+            }
+            else if (typeof(T) == typeof(StunSettings) && _stunSettings.TryGetValue(entity.Id, out var stunSettings))
+            {
+                component = (T)(object)stunSettings;
+                return true;
+            }
+
+            return false;
+        }
+
+        public List<Entity> GetEntities() => _entities;
+    }
+}
+
+--- Components\Bounceable.cs ---
+﻿// Components/Bounceable.cs
+namespace ECS_Example.Components
+{
+    public struct Bounceable
+    {
+        public float BounceVelocity;
+
+        public Bounceable(float bounceVelocity)
+        {
+            BounceVelocity = bounceVelocity;
+        }
+    }
+}
+
+--- Components\Collider.cs ---
+﻿// Components/Collider.cs
+using Microsoft.Xna.Framework;
+
+namespace ECS_Example.Components
+{
+    public struct Collider
+    {
+        public enum ColliderType { Static, Dynamic }
+
+        public Rectangle Bounds;
+        public ColliderType Type;
+
+        public Collider(Rectangle bounds, ColliderType type)
+        {
+            Bounds = bounds;
+            Type = type;
+        }
+    }
+}
+
+--- Components\Damager.cs ---
+﻿// Components/Damager.cs
+namespace ECS_Example.Components
+{
+    public enum DamageType
+    {
+        Contact,    // Damages on any contact
+        FromAbove,  // Only damages when hit from above (like jumping on enemies)
+        None        // Doesn't deal damage
+    }
+
+    public struct Damager
+    {
+        public int Damage;
+        public DamageType Type;
+
+        public Damager(int damage, DamageType type = DamageType.Contact)
+        {
+            Damage = damage;
+            Type = type;
+        }
+    }
+}
+
+--- Components\FlashEffect.cs ---
+﻿// Components/FlashEffect.cs
+namespace ECS_Example.Components
+{
+    public struct FlashEffect
+    {
+        public float FlashInterval;
+        public float TimeUntilFlash;
+        public bool IsVisible;
+
+        public FlashEffect(float flashInterval)
+        {
+            FlashInterval = flashInterval;
+            TimeUntilFlash = flashInterval;
+            IsVisible = true;
+        }
+    }
+}
+
+--- Components\Gravity.cs ---
+﻿// Components/Gravity.cs
+namespace ECS_Example.Components
+{
+    public struct Gravity
+    {
+        public float Value;
+        public bool IsGrounded;
+
+        public Gravity(float value)
+        {
+            Value = value;
+            IsGrounded = false;
+        }
+    }
+}
+
+--- Components\Health.cs ---
+﻿// Components/Health.cs
+namespace ECS_Example.Components
+{
+    public struct Health
+    {
+        public int CurrentHealth;
+        public int MaxHealth;
+        public bool IsDead => CurrentHealth <= 0;
+
+        public Health(int maxHealth)
+        {
+            MaxHealth = maxHealth;
+            CurrentHealth = maxHealth;
+        }
+
+        public void TakeDamage(int damage)
+        {
+            CurrentHealth -= damage;
+            if (CurrentHealth < 0)
+                CurrentHealth = 0;
+        }
+    }
+}
+
+--- Components\Input.cs ---
+﻿// Components/Input.cs
+namespace ECS_Example.Components
+{
+    public struct Input
+    {
+        public bool IsPlayerControlled;
+
+        public Input(bool isPlayerControlled)
+        {
+            IsPlayerControlled = isPlayerControlled;
+        }
+    }
+}
+
+--- Components\Invulnerable.cs ---
+﻿// Components/Invulnerable.cs
+namespace ECS_Example.Components
+{
+    public struct Invulnerable
+    {
+        public float Duration;
+        public float TimeRemaining;
+
+        public Invulnerable(float duration)
+        {
+            Duration = duration;
+            TimeRemaining = duration;
+        }
+    }
+}
+
+--- Components\InvulnerableSettings.cs ---
+﻿// Components/InvulnerableSettings.cs
+namespace ECS_Example.Components
+{
+    public struct InvulnerableSettings
+    {
+        public float Duration;
+
+        public InvulnerableSettings(float duration)
+        {
+            Duration = duration;
+        }
+    }
+}
+
+--- Components\Jump.cs ---
+﻿// Components/Jump.cs
+namespace ECS_Example.Components
+{
+    public struct Jump
+    {
+        public float JumpVelocity;
+        public bool CanJump;
+
+        public Jump(float jumpVelocity)
+        {
+            JumpVelocity = jumpVelocity;
+            CanJump = true;
+        }
+    }
+}
+
+--- Components\Patrol.cs ---
+﻿// Components/Patrol.cs - Updated for platformer-style patrol
+namespace ECS_Example.Components
+{
+    public struct Patrol
+    {
+        public float Speed;
+        public bool FacingRight;
+        public bool AvoidFalling; // true = Koopa style, false = Goomba style
+
+        public Patrol(float speed, bool avoidFalling = false)
+        {
+            Speed = speed;
+            FacingRight = false; // Start facing left
+            AvoidFalling = avoidFalling;
+        }
+    }
+}
+
+--- Components\PlayerController.cs ---
+﻿// Components/PlayerController.cs
+namespace ECS_Example.Components
+{
+    public struct PlayerController
+    {
+        public float MoveSpeed;
+
+        public PlayerController(float moveSpeed)
+        {
+            MoveSpeed = moveSpeed;
+        }
+    }
+}
+
+--- Components\Position.cs ---
+﻿// Components/Position.cs
+using Microsoft.Xna.Framework;
+
+namespace ECS_Example.Components
+{
+    public struct Position
+    {
+        public Vector2 Value;
+
+        public Position(float x, float y)
+        {
+            Value = new Vector2(x, y);
+        }
+    }
+}
+
+--- Components\Shape.cs ---
+﻿// Components/Shape.cs
+using Microsoft.Xna.Framework;
+
+namespace ECS_Example.Components
+{
+    public struct Shape
+    {
+        public enum ShapeType { Rectangle, Circle }
+
+        public ShapeType Type;
+        public Color Color;
+        public Vector2 Size; // Width/Height for rectangle, Radius for circle (X component)
+
+        public Shape(ShapeType type, Color color, Vector2 size)
+        {
+            Type = type;
+            Color = color;
+            Size = size;
+        }
+    }
+}
+
+--- Components\StunSettings.cs ---
+﻿// Components/StunSettings.cs
+namespace ECS_Example.Components
+{
+    public struct StunSettings
+    {
+        public float DamageStunDuration;
+
+        public StunSettings(float damageStunDuration)
+        {
+            DamageStunDuration = damageStunDuration;
+        }
+    }
+}
+
+--- Components\Stunned.cs ---
+﻿// Components/Stunned.cs
+namespace ECS_Example.Components
+{
+    public struct Stunned
+    {
+        public float Duration;
+        public float TimeRemaining;
+
+        public Stunned(float duration)
+        {
+            Duration = duration;
+            TimeRemaining = duration;
+        }
+    }
+}
+
+--- Components\Velocity.cs ---
+﻿// Components/Velocity.cs
+using Microsoft.Xna.Framework;
+
+namespace ECS_Example.Components
+{
+    public struct Velocity
+    {
+        public Vector2 Value;
+
+        public Velocity(float x, float y)
+        {
+            Value = new Vector2(x, y);
+        }
+    }
+}
+
+--- Entities\Entity.cs ---
+﻿// Entities/Entity.cs
+namespace ECS_Example.Entities
+{
+    public class Entity
+    {
+        public int Id { get; private set; }
+        private static int _nextId = 0;
+
+        public Entity()
+        {
+            Id = _nextId++;
+        }
+    }
+}
+
+--- Factories\EnemyFactory.cs ---
+﻿// Factories/EnemyFactory.cs
+using ECS_Example.Components;
+using ECS_Example.Entities;
+using ECS_Example;
+using Microsoft.Xna.Framework;
+
+public static class EnemyFactory
+{
+    public static Entity CreatePatrolEnemy(World world, Vector2 position, float speed, bool avoidFalling, Color color)
+    {
+        var enemy = world.CreateEntity();
+
+        world.AddComponent(enemy, new Position(position.X, position.Y));
+        world.AddComponent(enemy, new Shape(
+            Shape.ShapeType.Rectangle,
+            color,
+            new Vector2(32, 32)
+        ));
+        world.AddComponent(enemy, new Velocity(0, 0));
+        world.AddComponent(enemy, new Patrol(speed, avoidFalling));
+        world.AddComponent(enemy, new Gravity(980));
+        world.AddComponent(enemy, new Collider(
+            new Rectangle(0, 0, 32, 32),
+            Collider.ColliderType.Dynamic
+        ));
+        world.AddComponent(enemy, new Health(1));
+        world.AddComponent(enemy, new Damager(1, DamageType.Contact));
+        world.AddComponent(enemy, new Bounceable(-300));
+
+        return enemy;
+    }
+}
+
+--- Factories\PlayerFactory.cs ---
+﻿// Factories/PlayerFactory.cs
+using Microsoft.Xna.Framework;
+using ECS_Example.Components;
+using ECS_Example.Entities;
+
+namespace ECS_Example.Factories
+{
+    public static class PlayerFactory
+    {
+        public static Entity CreatePlayer(World world, Vector2 position)
+        {
+            var player = world.CreateEntity();
+
+            // Position and visuals
+            world.AddComponent(player, new Position(position.X, position.Y));
+            world.AddComponent(player, new Shape(
+                Shape.ShapeType.Rectangle,
+                Color.Green,
+                new Vector2(32, 48)
+            ));
+
+            // Physics
+            world.AddComponent(player, new Velocity(0, 0));
+            world.AddComponent(player, new Gravity(980));
+            world.AddComponent(player, new Collider(
+                new Rectangle(0, 0, 32, 48),
+                Collider.ColliderType.Dynamic
+            ));
+
+            // Player-specific
+            world.AddComponent(player, new PlayerController(200));
+            world.AddComponent(player, new Jump(-500));
+
+            // Combat
+            world.AddComponent(player, new Health(3));
+            world.AddComponent(player, new Damager(1, DamageType.FromAbove));
+            world.AddComponent(player, new InvulnerableSettings(1.0f));
+            world.AddComponent(player, new StunSettings(0.5f));
+
+            return player;
+        }
+    }
+}
+
+--- obj\Debug\net6.0\.NETCoreApp,Version=v6.0.AssemblyAttributes.cs ---
+// <autogenerated />
+using System;
+using System.Reflection;
+[assembly: global::System.Runtime.Versioning.TargetFrameworkAttribute(".NETCoreApp,Version=v6.0", FrameworkDisplayName = ".NET 6.0")]
+
+
+--- obj\Debug\net6.0\ECS-Example.AssemblyInfo.cs ---
+//------------------------------------------------------------------------------
+// <auto-generated>
+//     This code was generated by a tool.
+//     Runtime Version:4.0.30319.42000
+//
+//     Changes to this file may cause incorrect behavior and will be lost if
+//     the code is regenerated.
+// </auto-generated>
+//------------------------------------------------------------------------------
+
+using System;
+using System.Reflection;
+
+[assembly: System.Reflection.AssemblyCompanyAttribute("ECS-Example")]
+[assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
+[assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyProductAttribute("ECS-Example")]
+[assembly: System.Reflection.AssemblyTitleAttribute("ECS-Example")]
+[assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
+
+// Generated by the MSBuild WriteCodeFragment class.
+
+
+
+--- Systems\CollisionSystem.cs ---
+﻿// Systems/CollisionSystem.cs - Fixed collision logic
+using Microsoft.Xna.Framework;
+using ECS_Example.Components;
+using System.Diagnostics;
+using System;
+
+namespace ECS_Example.Systems
+{
+    public class CollisionSystem
+    {
+        public void Update(World world)
+        {
+            var entities = world.GetEntities();
+
+            foreach (var entity in entities)
+            {
+                if (!world.TryGetComponent<Collider>(entity, out var collider) ||
+                    collider.Type != Collider.ColliderType.Dynamic)
+                    continue;
+
+                if (!world.TryGetComponent<Position>(entity, out var position) ||
+                    !world.TryGetComponent<Velocity>(entity, out var velocity))
+                    continue;
+
+                bool hasGravity = world.TryGetComponent<Gravity>(entity, out var gravity);
+
+                Rectangle bounds = new Rectangle(
+                    (int)position.Value.X,
+                    (int)position.Value.Y,
+                    collider.Bounds.Width,
+                    collider.Bounds.Height
+                );
+
+                bool touchingGround = false;
+
+                foreach (var other in entities)
+                {
+                    if (other.Id == entity.Id) continue;
+
+                    if (!world.TryGetComponent<Collider>(other, out var otherCollider) ||
+                        otherCollider.Type != Collider.ColliderType.Static)
+                        continue;
+
+                    if (!world.TryGetComponent<Position>(other, out var otherPosition))
+                        continue;
+
+                    Rectangle otherBounds = new Rectangle(
+                        (int)otherPosition.Value.X,
+                        (int)otherPosition.Value.Y,
+                        otherCollider.Bounds.Width,
+                        otherCollider.Bounds.Height
+                    );
+
+                    if (bounds.Intersects(otherBounds))
+                    {
+                        // Calculate penetration depth on each side
+                        float leftPenetration = bounds.Right - otherBounds.Left;
+                        float rightPenetration = otherBounds.Right - bounds.Left;
+                        float topPenetration = bounds.Bottom - otherBounds.Top;
+                        float bottomPenetration = otherBounds.Bottom - bounds.Top;
+
+                        // Find minimum penetration
+                        float minX = Math.Min(leftPenetration, rightPenetration);
+                        float minY = Math.Min(topPenetration, bottomPenetration);
+
+                        // Resolve on the axis with smallest penetration
+                        if (minX < minY)
+                        {
+                            // Resolve horizontally
+                            if (leftPenetration < rightPenetration)
+                                position.Value.X -= leftPenetration;
+                            else
+                                position.Value.X += rightPenetration;
+
+                            velocity.Value.X = 0;
+                        }
+                        else
+                        {
+                            // Resolve vertically
+                            if (topPenetration < bottomPenetration)
+                            {
+                                // Player is above the platform (standing on it)
+                                position.Value.Y -= topPenetration;
+                                velocity.Value.Y = 0;
+                                touchingGround = true;
+                                //Debug.WriteLine($"GROUNDED! Entity {entity.Id} on top of {other.Id}");
+                            }
+                            else
+                            {
+                                // Player hit from below (ceiling)
+                                position.Value.Y += bottomPenetration;
+                                velocity.Value.Y = 0;
+                                //Debug.WriteLine("Hit ceiling");
+                            }
+                        }
+
+                        world.AddComponent(entity, position);
+                        world.AddComponent(entity, velocity);
+                    }
+                }
+
+                // Update grounded state
+                if (hasGravity)
+                {
+                    if (gravity.IsGrounded != touchingGround)
+                    {
+                        //Debug.WriteLine($"Entity {entity.Id} grounded state: {gravity.IsGrounded} -> {touchingGround}");
+                    }
+                    gravity.IsGrounded = touchingGround;
+                    world.AddComponent(entity, gravity);
+                }
+            }
+        }
+    }
+}
+
+--- Systems\DamageSystem.cs ---
+﻿// Systems/DamageSystem.cs - Fixed version
+using Microsoft.Xna.Framework;
+using ECS_Example.Components;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using ECS_Example.Entities;
+
+namespace ECS_Example.Systems
+{
+    public class DamageSystem
+    {
+        private HashSet<(int, int)> _processedCollisions = new HashSet<(int, int)>();
+
+        public void Update(World world)
+        {
+            _processedCollisions.Clear();
+            var entities = world.GetEntities();
+
+            for (int i = 0; i < entities.Count; i++)
+            {
+                var entityA = entities[i];
+                if (!world.TryGetComponent<Position>(entityA, out var posA) ||
+                    !world.TryGetComponent<Collider>(entityA, out var colliderA))
+                    continue;
+
+                Rectangle boundsA = new Rectangle(
+                    (int)posA.Value.X + colliderA.Bounds.X,
+                    (int)posA.Value.Y + colliderA.Bounds.Y,
+                    colliderA.Bounds.Width,
+                    colliderA.Bounds.Height
+                );
+
+                for (int j = i + 1; j < entities.Count; j++)
+                {
+                    var entityB = entities[j];
+                    if (!world.TryGetComponent<Position>(entityB, out var posB) ||
+                        !world.TryGetComponent<Collider>(entityB, out var colliderB))
+                        continue;
+
+                    Rectangle boundsB = new Rectangle(
+                        (int)posB.Value.X + colliderB.Bounds.X,
+                        (int)posB.Value.Y + colliderB.Bounds.Y,
+                        colliderB.Bounds.Width,
+                        colliderB.Bounds.Height
+                    );
+
+                    if (boundsA.Intersects(boundsB))
+                    {
+                        HandleCollision(world, entityA, entityB, boundsA, boundsB);
+                    }
+                }
+            }
+        }
+
+        private void HandleCollision(World world, Entity entityA, Entity entityB,
+                                    Rectangle boundsA, Rectangle boundsB)
+        {
+            // Create a unique key for this collision pair
+            var collisionKey = (Math.Min(entityA.Id, entityB.Id), Math.Max(entityA.Id, entityB.Id));
+
+            // Skip if we've already processed this collision
+            if (_processedCollisions.Contains(collisionKey))
+                return;
+
+            _processedCollisions.Add(collisionKey);
+
+            // Check if A can damage B
+            bool aDamagedB = CheckDamage(world, entityA, entityB, boundsA, boundsB);
+
+            // Only check if B can damage A if A didn't damage B
+            if (!aDamagedB)
+            {
+                CheckDamage(world, entityB, entityA, boundsB, boundsA);
+            }
+        }
+
+        private bool CheckDamage(World world, Entity damager, Entity target,
+                                Rectangle damagerBounds, Rectangle targetBounds)
+        {
+            if (!world.TryGetComponent<Damager>(damager, out var damagerComp) ||
+                !world.TryGetComponent<Health>(target, out var health) ||
+                world.TryGetComponent<Invulnerable>(target, out _))
+                return false;
+
+            bool shouldDamage = false;
+
+            switch (damagerComp.Type)
+            {
+                case DamageType.Contact:
+                    shouldDamage = true;
+                    break;
+
+                case DamageType.FromAbove:
+                    // Check if damager is above target
+                    if (world.TryGetComponent<Velocity>(damager, out var damagerVel) &&
+                        damagerVel.Value.Y > 0 && // Moving down
+                        damagerBounds.Bottom <= targetBounds.Top + 15 && // Above the target
+                        damagerBounds.Center.X > targetBounds.Left && // Within horizontal bounds
+                        damagerBounds.Center.X < targetBounds.Right)
+                    {
+                        shouldDamage = true;
+
+                        // Handle bouncing if target is bounceable
+                        if (world.TryGetComponent<Bounceable>(target, out var bounce))
+                        {
+                            damagerVel.Value.Y = bounce.BounceVelocity;
+                            world.AddComponent(damager, damagerVel);
+                        }
+                    }
+                    break;
+            }
+
+            if (shouldDamage)
+            {
+                health.TakeDamage(damagerComp.Damage);
+                world.AddComponent(target, health);
+
+                // Get invulnerability duration from settings or use default
+                float invulnDuration = 1.0f;
+                if (world.TryGetComponent<InvulnerableSettings>(target, out var invulnSettings))
+                {
+                    invulnDuration = invulnSettings.Duration;
+                }
+
+                // Make target invulnerable
+                world.AddComponent(target, new Invulnerable(invulnDuration));
+
+                // Add effects if it's the player
+                if (world.TryGetComponent<PlayerController>(target, out _))
+                {
+                    world.AddComponent(target, new FlashEffect(0.1f));
+                    float stunDuration = 0.3f;
+                    if (world.TryGetComponent<StunSettings>(target, out var stunSettings))
+                    {
+                        stunDuration = stunSettings.DamageStunDuration;
+                    }
+                    world.AddComponent(target, new Stunned(stunDuration));
+
+                    // Add stronger recoil
+                    if (world.TryGetComponent<Velocity>(target, out var targetVel) &&
+                        world.TryGetComponent<Position>(damager, out var damagerPos) &&
+                        world.TryGetComponent<Position>(target, out var targetPos))
+                    {
+                        // Calculate knockback direction
+                        float knockbackX = 0;
+                        float knockbackY = -250; // Upward boost
+
+                        // Stronger horizontal knockback
+                        if (targetPos.Value.X < damagerPos.Value.X)
+                        {
+                            knockbackX = -200; // Knocked left
+                        }
+                        else
+                        {
+                            knockbackX = 200; // Knocked right
+                        }
+
+                        targetVel.Value.X = knockbackX;
+                        targetVel.Value.Y = knockbackY;
+                        world.AddComponent(target, targetVel);
+                    }
+                }
+
+                Debug.WriteLine($"Entity {target.Id} took {damagerComp.Damage} damage! Health: {health.CurrentHealth}/{health.MaxHealth}");
+                return true;
+            }
+
+            return false;
+        }
+    }
+}
+
+--- Systems\FlashSystem.cs ---
+﻿// Systems/FlashSystem.cs
+using ECS_Example.Components;
+
+namespace ECS_Example.Systems
+{
+    public class FlashSystem
+    {
+        public void Update(World world, float deltaTime)
+        {
+            foreach (var entity in world.GetEntities())
+            {
+                if (world.TryGetComponent<FlashEffect>(entity, out var flash) &&
+                    world.TryGetComponent<Invulnerable>(entity, out var invuln))
+                {
+                    flash.TimeUntilFlash -= deltaTime;
+
+                    if (flash.TimeUntilFlash <= 0)
+                    {
+                        flash.IsVisible = !flash.IsVisible;
+                        flash.TimeUntilFlash = flash.FlashInterval;
+                    }
+
+                    world.AddComponent(entity, flash);
+                }
+                else if (world.TryGetComponent<FlashEffect>(entity, out flash))
+                {
+                    // Remove flash effect if no longer invulnerable
+                    world.RemoveComponent<FlashEffect>(entity);
+                }
+            }
+        }
+    }
+}
+
+--- Systems\GravitySystem.cs ---
+﻿// Systems/GravitySystem.cs
+using ECS_Example.Components;
+
+namespace ECS_Example.Systems
+{
+    public class GravitySystem
+    {
+        private const float MAX_FALL_SPEED = 600f;
+
+        public void Update(World world, float deltaTime)
+        {
+            foreach (var entity in world.GetEntities())
+            {
+                if (world.TryGetComponent<Gravity>(entity, out var gravity) &&
+                    world.TryGetComponent<Velocity>(entity, out var velocity))
+                {
+                    if (!gravity.IsGrounded)
+                    {
+                        // Apply gravity
+                        velocity.Value.Y += gravity.Value * deltaTime;
+
+                        // Cap fall speed
+                        if (velocity.Value.Y > MAX_FALL_SPEED)
+                            velocity.Value.Y = MAX_FALL_SPEED;
+
+                        world.AddComponent(entity, velocity);
+                    }
+                }
+            }
+        }
+    }
+}
+
+--- Systems\HealthSystem.cs ---
+﻿// Systems/HealthSystem.cs - Fixed version
+using Microsoft.Xna.Framework;
+using ECS_Example.Components;
+using System.Collections.Generic;
+using System.Diagnostics;
+using ECS_Example.Entities;
+
+namespace ECS_Example.Systems
+{
+    public class HealthSystem
+    {
+        public void Update(World world, float deltaTime)
+        {
+            var entities = world.GetEntities();
+            var entitiesToRemove = new List<Entity>();
+
+            // Handle invulnerability timers and collect dead entities
+            foreach (var entity in entities)
+            {
+                if (world.TryGetComponent<Invulnerable>(entity, out var invuln))
+                {
+                    invuln.TimeRemaining -= deltaTime;
+                    if (invuln.TimeRemaining <= 0)
+                    {
+                        world.RemoveComponent<Invulnerable>(entity);
+                    }
+                    else
+                    {
+                        world.AddComponent(entity, invuln);
+                    }
+                }
+
+                // Check for dead entities
+                if (world.TryGetComponent<Health>(entity, out var health) && health.IsDead)
+                {
+                    if (world.TryGetComponent<PlayerController>(entity, out _))
+                    {
+                        // Handle player death
+                        HandlePlayerDeath(world, entity);
+                    }
+                    else
+                    {
+                        // Mark enemy for removal
+                        entitiesToRemove.Add(entity);
+                    }
+                }
+            }
+
+            // Remove dead entities after iteration
+            foreach (var entity in entitiesToRemove)
+            {
+                world.RemoveEntity(entity);
+                Debug.WriteLine($"Enemy {entity.Id} died!");
+            }
+        }
+
+        private void HandlePlayerDeath(World world, Entity player)
+        {
+            Debug.WriteLine("Player died! Restarting game...");
+            // Reset player position and health
+            if (world.TryGetComponent<Position>(player, out var position))
+            {
+                position.Value = new Vector2(400, 300);
+                world.AddComponent(player, position);
+            }
+
+            var health = new Health(3);
+            world.AddComponent(player, health);
+        }
+    }
+}
+
+--- Systems\InputSystem.cs ---
+﻿// Systems/InputSystem.cs
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
+using ECS_Example.Components;
+using System.Collections.Specialized;
+using System.Diagnostics;
+
+namespace ECS_Example.Systems
+{
+    public class InputSystem
+    {
+        public void Update(World world)
+        {
+            var keyboardState = Keyboard.GetState();
+
+            foreach (var entity in world.GetEntities())
+            {
+                if (world.TryGetComponent<Input>(entity, out var input) &&
+                    world.TryGetComponent<Velocity>(entity, out var velocity) &&
+                    input.IsPlayerControlled)
+                {
+                    // Left/right movement
+                    velocity.Value.X = 0;
+
+                    if (keyboardState.IsKeyDown(Keys.Left))
+                        velocity.Value.X = -200;
+                    else if (keyboardState.IsKeyDown(Keys.Right))
+                        velocity.Value.X = 200;
+
+                    // Jumping
+                    if (keyboardState.IsKeyDown(Keys.Space) &&
+                        world.TryGetComponent<Gravity>(entity, out var gravity) &&
+                        gravity.IsGrounded)
+                    {
+                        velocity.Value.Y = -400; // Jump velocity
+                    }
+
+                    world.AddComponent(entity, velocity);
+                }
+            }
+        }
+    }
+}
+
+--- Systems\JumpSystem.cs ---
+﻿// Systems/JumpSystem.cs
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
+using ECS_Example.Components;
+
+namespace ECS_Example.Systems
+{
+    public class JumpSystem
+    {
+        public void Update(World world)
+        {
+            var keyboardState = Keyboard.GetState();
+
+            foreach (var entity in world.GetEntities())
+            {
+                if (!world.TryGetComponent<Jump>(entity, out var jump) ||
+                    !world.TryGetComponent<Gravity>(entity, out var gravity) ||
+                    !world.TryGetComponent<Velocity>(entity, out var velocity))
+                    continue;
+
+                if (keyboardState.IsKeyDown(Keys.Space) && gravity.IsGrounded)
+                {
+                    velocity.Value.Y = jump.JumpVelocity;
+                    world.AddComponent(entity, velocity);
+                }
+            }
+        }
+    }
+}
+
+--- Systems\MovementSystem.cs ---
+﻿// Systems/MovementSystem.cs
+using Microsoft.Xna.Framework;
+using ECS_Example.Components;
+
+namespace ECS_Example.Systems
+{
+    public class MovementSystem
+    {
+        public void Update(World world, float deltaTime)
+        {
+            foreach (var entity in world.GetEntities())
+            {
+                if (world.TryGetComponent<Position>(entity, out var position) &&
+                    world.TryGetComponent<Velocity>(entity, out var velocity))
+                {
+                    position.Value += velocity.Value * deltaTime;
+                    world.AddComponent(entity, position);
+                }
+            }
+        }
+    }
+}
+
+--- Systems\PatrolSystem.cs ---
+﻿// Systems/PatrolSystem.cs - Platformer-style patrol
+using Microsoft.Xna.Framework;
+using ECS_Example.Components;
+using System;
+using ECS_Example.Entities;
+
+namespace ECS_Example.Systems
+{
+    public class PatrolSystem
+    {
+        public void Update(World world)
+        {
+            var entities = world.GetEntities();
+
+            foreach (var entity in entities)
+            {
+                if (!world.TryGetComponent<Patrol>(entity, out var patrol) ||
+                    !world.TryGetComponent<Position>(entity, out var position) ||
+                    !world.TryGetComponent<Velocity>(entity, out var velocity) ||
+                    !world.TryGetComponent<Collider>(entity, out var collider))
+                    continue;
+
+                // Create bounds for this entity
+                Rectangle bounds = new Rectangle(
+                    (int)position.Value.X,
+                    (int)position.Value.Y,
+                    collider.Bounds.Width,
+                    collider.Bounds.Height
+                );
+
+                bool shouldTurn = false;
+
+                // Check for wall collision
+                if (CheckWallCollision(world, entities, bounds, patrol.FacingRight))
+                {
+                    shouldTurn = true;
+                }
+
+                // If avoiding falls, check for edge
+                if (patrol.AvoidFalling && !shouldTurn)
+                {
+                    if (CheckForEdge(world, entities, position, collider, patrol.FacingRight))
+                    {
+                        shouldTurn = true;
+                    }
+                }
+
+                // Turn around if needed
+                if (shouldTurn)
+                {
+                    patrol.FacingRight = !patrol.FacingRight;
+                    world.AddComponent(entity, patrol);
+                }
+
+                // Set velocity based on direction
+                velocity.Value.X = patrol.FacingRight ? patrol.Speed : -patrol.Speed;
+                world.AddComponent(entity, velocity);
+            }
+        }
+
+        private bool CheckWallCollision(World world, System.Collections.Generic.List<Entity> entities,
+                                       Rectangle bounds, bool facingRight)
+        {
+            // Create a thin rectangle to check for walls
+            Rectangle checkRect = facingRight
+                ? new Rectangle(bounds.Right, bounds.Y + 5, 2, bounds.Height - 10)
+                : new Rectangle(bounds.Left - 2, bounds.Y + 5, 2, bounds.Height - 10);
+
+            foreach (var other in entities)
+            {
+                if (!world.TryGetComponent<Collider>(other, out var otherCollider) ||
+                    otherCollider.Type != Collider.ColliderType.Static ||
+                    !world.TryGetComponent<Position>(other, out var otherPosition))
+                    continue;
+
+                Rectangle otherBounds = new Rectangle(
+                    (int)otherPosition.Value.X,
+                    (int)otherPosition.Value.Y,
+                    otherCollider.Bounds.Width,
+                    otherCollider.Bounds.Height
+                );
+
+                if (checkRect.Intersects(otherBounds))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private bool CheckForEdge(World world, System.Collections.Generic.List<Entity> entities,
+                                 Position position, Collider collider, bool facingRight)
+        {
+            // Check a point below and ahead of the entity
+            int checkX = facingRight
+                ? (int)(position.Value.X + collider.Bounds.Width + 5)
+                : (int)(position.Value.X - 5);
+
+            Rectangle checkRect = new Rectangle(
+                checkX,
+                (int)(position.Value.Y + collider.Bounds.Height + 1),
+                2,
+                5
+            );
+
+            // Check if there's ground below the next step
+            foreach (var other in entities)
+            {
+                if (!world.TryGetComponent<Collider>(other, out var otherCollider) ||
+                    otherCollider.Type != Collider.ColliderType.Static ||
+                    !world.TryGetComponent<Position>(other, out var otherPosition))
+                    continue;
+
+                Rectangle otherBounds = new Rectangle(
+                    (int)otherPosition.Value.X,
+                    (int)otherPosition.Value.Y,
+                    otherCollider.Bounds.Width,
+                    otherCollider.Bounds.Height
+                );
+
+                if (checkRect.Intersects(otherBounds))
+                {
+                    return false; // There is ground
+                }
+            }
+
+            return true; // No ground found - it's an edge!
+        }
+    }
+}
+
+--- Systems\PlayerMovementSystem.cs ---
+﻿// Systems/PlayerMovementSystem.cs
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
+using ECS_Example.Components;
+
+namespace ECS_Example.Systems
+{
+    public class PlayerMovementSystem
+    {
+        public void Update(World world)
+        {
+            var keyboardState = Keyboard.GetState();
+
+            foreach (var entity in world.GetEntities())
+            {
+                if (!world.TryGetComponent<PlayerController>(entity, out var controller) ||
+                    !world.TryGetComponent<Velocity>(entity, out var velocity))
+                    continue;
+
+                // Skip input if stunned
+                if (world.TryGetComponent<Stunned>(entity, out _))
+                    continue;
+
+                // Horizontal movement
+                velocity.Value.X = 0;
+
+                if (keyboardState.IsKeyDown(Keys.Left))
+                    velocity.Value.X = -controller.MoveSpeed;
+                else if (keyboardState.IsKeyDown(Keys.Right))
+                    velocity.Value.X = controller.MoveSpeed;
+
+                world.AddComponent(entity, velocity);
+            }
+        }
+    }
+}
+
+--- Systems\RenderSystem.cs ---
+﻿// Systems/RenderSystem.cs
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using ECS_Example.Components;
+using ECS_Example.Entities;
+
+namespace ECS_Example.Systems
+{
+    public class RenderSystem
+    {
+        private SpriteBatch _spriteBatch;
+        private Texture2D _whiteTexture;
+        private bool _debug = true;
+
+        public RenderSystem(SpriteBatch spriteBatch, GraphicsDevice graphicsDevice)
+        {
+            _spriteBatch = spriteBatch;
+
+            // Create a 1x1 white texture for drawing shapes
+            _whiteTexture = new Texture2D(graphicsDevice, 1, 1);
+            _whiteTexture.SetData(new[] { Color.White });
+        }
+
+        public void Draw(World world)
+        {
+            _spriteBatch.Begin();
+
+            foreach (var entity in world.GetEntities())
+            {
+                if (world.TryGetComponent<Position>(entity, out var position) &&
+                    world.TryGetComponent<Shape>(entity, out var shape))
+                {
+                    // Check if entity should be visible
+                    bool shouldDraw = true;
+                    if (world.TryGetComponent<FlashEffect>(entity, out var flash))
+                    {
+                        shouldDraw = flash.IsVisible;
+                    }
+
+                    if (shouldDraw)
+                    {
+
+                        DrawShape(position, shape);
+
+                        // DEBUG: Draw collider bounds in red
+                        if (_debug && world.TryGetComponent<Collider>(entity, out var collider))
+                        {
+                            _spriteBatch.Draw(
+                                _whiteTexture,
+                                new Rectangle(
+                                    (int)position.Value.X + collider.Bounds.X,
+                                    (int)position.Value.Y + collider.Bounds.Y,
+                                    collider.Bounds.Width,
+                                    1  // Top edge
+                                ),
+                                Color.Red * 0.5f
+                            );
+                            _spriteBatch.Draw(
+                                _whiteTexture,
+                                new Rectangle(
+                                    (int)position.Value.X + collider.Bounds.X,
+                                    (int)position.Value.Y + collider.Bounds.Y + collider.Bounds.Height - 1,
+                                    collider.Bounds.Width,
+                                    1  // Bottom edge
+                                ),
+                                Color.Red * 0.5f
+                            );
+                        }
+                    }
+
+
+                }
+            }
+
+            _spriteBatch.End();
+        }
+
+        private void DrawShape(Position position, Shape shape)
+        {
+            switch (shape.Type)
+            {
+                case Shape.ShapeType.Rectangle:
+                    _spriteBatch.Draw(
+                        _whiteTexture,
+                        new Rectangle(
+                            (int)position.Value.X,
+                            (int)position.Value.Y,
+                            (int)shape.Size.X,
+                            (int)shape.Size.Y
+                        ),
+                        shape.Color
+                    );
+                    break;
+
+                case Shape.ShapeType.Circle:
+                    // For now, we'll draw circles as squares
+                    // (proper circle drawing requires more complex code)
+                    _spriteBatch.Draw(
+                        _whiteTexture,
+                        new Rectangle(
+                            (int)(position.Value.X - shape.Size.X / 2),
+                            (int)(position.Value.Y - shape.Size.X / 2),
+                            (int)shape.Size.X,
+                            (int)shape.Size.X
+                        ),
+                        shape.Color
+                    );
+                    break;
+            }
+        }
+    }
+}
+
+--- Systems\StunSystem.cs ---
+﻿// Systems/StunSystem.cs
+using ECS_Example.Components;
+
+namespace ECS_Example.Systems
+{
+    public class StunSystem
+    {
+        public void Update(World world, float deltaTime)
+        {
+            foreach (var entity in world.GetEntities())
+            {
+                if (world.TryGetComponent<Stunned>(entity, out var stun))
+                {
+                    stun.TimeRemaining -= deltaTime;
+
+                    if (stun.TimeRemaining <= 0)
+                    {
+                        world.RemoveComponent<Stunned>(entity);
+                    }
+                    else
+                    {
+                        world.AddComponent(entity, stun);
+                    }
+                }
+            }
+        }
+    }
+}
