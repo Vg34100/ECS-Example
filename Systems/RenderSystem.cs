@@ -45,6 +45,7 @@ namespace ECS_Example.Systems
                         // DEBUG: Draw collider bounds in red
                         if (_debug && world.TryGetComponent<Collider>(entity, out var collider))
                         {
+
                             _spriteBatch.Draw(
                                 _whiteTexture,
                                 new Rectangle(
@@ -66,11 +67,54 @@ namespace ECS_Example.Systems
                                 Color.Red * 0.5f
                             );
                         }
+
+                        // DEBUG: Draw attack hitboxes
+                        if (_debug && world.TryGetComponent<Attack>(entity, out var attack) && attack.IsAttacking)
+                        {
+                            // Get entity center for better positioning
+                            if (world.TryGetComponent<Collider>(entity, out var entityCollider))
+                            {
+                                float entityCenterX = position.Value.X + (entityCollider.Bounds.Width / 2);
+                                float entityCenterY = position.Value.Y + (entityCollider.Bounds.Height / 2);
+
+                                // Calculate hitbox position
+                                float hitboxX;
+                                if (attack.IsFacingRight)
+                                {
+                                    // For right-facing, position starts at the right edge of player
+                                    hitboxX = position.Value.X + entityCollider.Bounds.Width;
+                                }
+                                else
+                                {
+                                    // For left-facing, position ends at the left edge of player
+                                    hitboxX = position.Value.X - attack.HitboxSize.X;
+                                }
+
+                                // Center the hitbox vertically on the player
+                                float hitboxY = entityCenterY - (attack.HitboxSize.Y / 2);
+
+                                _spriteBatch.Draw(
+                                    _whiteTexture,
+                                    new Rectangle(
+                                        (int)hitboxX,
+                                        (int)hitboxY,
+                                        (int)attack.HitboxSize.X,
+                                        (int)attack.HitboxSize.Y
+                                    ),
+                                    Color.Red * 0.5f
+                                );
+                            }
+                        }
+
+
                     }
 
 
                 }
             }
+
+
+
 
             _spriteBatch.End();
         }

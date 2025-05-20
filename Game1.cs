@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework.Input;
 using ECS_Example.Components;
 using ECS_Example.Systems;
 using ECS_Example.Factories;
+using System.Linq;
 
 namespace ECS_Example
 {
@@ -36,11 +37,27 @@ namespace ECS_Example
         private FlashSystem _flashSystem;
         private StunSystem _stunSystem;
 
+        // attack
+        private AttackSystem _attackSystem;
+        // controller
+        private float _deadZoneThreshold = 0.2f;
+
         public Game1()
         {
             _graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
+        }
+
+        private void Restart()
+        {
+            // Clear existing entities
+            var entities = _world.GetEntities().ToList();
+            foreach (var entity in entities)
+            {
+                _world.RemoveEntity(entity);
+            }
+            Initialize();
         }
 
         protected override void Initialize()
@@ -72,7 +89,7 @@ namespace ECS_Example
             CreatePlatform(600, 425, 100, 20);
 
             // Goomba-style enemy (will walk off edges) - Red
-            EnemyFactory.CreatePatrolEnemy(_world, new Vector2(300, 400), 100, false, Color.Red);
+            EnemyFactory.CreatePatrolEnemy(_world, new Vector2(300, 400), 100, false, Color.Red, 20);
 
             // Koopa-style enemy (avoids edges) - Orange
             EnemyFactory.CreatePatrolEnemy(_world, new Vector2(200, 300), 100, true, Color.Orange);
@@ -95,6 +112,8 @@ namespace ECS_Example
 
             _flashSystem = new FlashSystem();
             _stunSystem = new StunSystem();
+
+            _attackSystem = new AttackSystem();
 
             base.Initialize();
         }
@@ -122,9 +141,15 @@ namespace ECS_Example
 
         protected override void Update(GameTime gameTime)
         {
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed ||
+            if (GamePad.GetState(PlayerIndex.One).Buttons.Start == ButtonState.Pressed ||
                 Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
+
+            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed ||
+                Keyboard.GetState().IsKeyDown(Keys.Back))
+            {
+                Restart();
+            }
 
             float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
@@ -143,6 +168,8 @@ namespace ECS_Example
 
             _flashSystem.Update(_world, deltaTime);
             _stunSystem.Update(_world, deltaTime);
+
+            _attackSystem.Update(_world, deltaTime);
 
             base.Update(gameTime);
         }

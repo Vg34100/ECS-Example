@@ -31,6 +31,10 @@ namespace ECS_Example
         private Dictionary<int, InvulnerableSettings> _invulnerableSettings = new Dictionary<int, InvulnerableSettings>();
         private Dictionary<int, StunSettings> _stunSettings = new Dictionary<int, StunSettings>();
 
+        // attack
+        private Dictionary<int, Attack> _attacks = new Dictionary<int, Attack>();
+
+
         public Entity CreateEntity()
         {
             var entity = new Entity();
@@ -97,6 +101,8 @@ namespace ECS_Example
                 _invulnerableSettings[entity.Id] = (InvulnerableSettings)(object)component;
             else if (typeof(T) == typeof(StunSettings))
                 _stunSettings[entity.Id] = (StunSettings)(object)component;
+            else if (typeof(T) == typeof(Attack))
+                _attacks[entity.Id] = (Attack)(object)component;
 
         }
 
@@ -110,6 +116,8 @@ namespace ECS_Example
                 _stunnedStates.Remove(entity.Id);
             else if (typeof(T) == typeof(InvulnerableSettings))
                 _invulnerableSettings.Remove(entity.Id);
+            else if (typeof(T) == typeof(Attack))
+                _attacks.Remove(entity.Id);
         }
 
         public bool TryGetComponent<T>(Entity entity, out T component)
@@ -199,6 +207,11 @@ namespace ECS_Example
             else if (typeof(T) == typeof(StunSettings) && _stunSettings.TryGetValue(entity.Id, out var stunSettings))
             {
                 component = (T)(object)stunSettings;
+                return true;
+            }
+            else if (typeof(T) == typeof(Attack) && _attacks.TryGetValue(entity.Id, out var attack))
+            {
+                component = (T)(object)attack;
                 return true;
             }
 

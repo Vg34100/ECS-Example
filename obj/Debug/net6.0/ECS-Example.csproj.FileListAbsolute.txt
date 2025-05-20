@@ -23,3 +23,4 @@ A:\Projects\The Game Lab\MonoGame\ECS-Example\ECS-Example\obj\Debug\net6.0\refin
 A:\Projects\The Game Lab\MonoGame\ECS-Example\ECS-Example\obj\Debug\net6.0\ECS-Example.pdb
 A:\Projects\The Game Lab\MonoGame\ECS-Example\ECS-Example\obj\Debug\net6.0\ECS-Example.genruntimeconfig.cache
 A:\Projects\The Game Lab\MonoGame\ECS-Example\ECS-Example\obj\Debug\net6.0\ref\ECS-Example.dll
+A:\Projects\The Game Lab\MonoGame\ECS-Example\ECS-Example\obj\Debug\net6.0\ECS-Example.sourcelink.json

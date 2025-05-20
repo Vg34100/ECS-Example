@@ -20,6 +20,10 @@ namespace ECS_Example.Systems
                     !world.TryGetComponent<Collider>(entity, out var collider))
                     continue;
 
+                // Skip patrol logic if entity is invulnerable (recently hit)
+                if (world.TryGetComponent<Invulnerable>(entity, out _))
+                    continue;
+
                 // Create bounds for this entity
                 Rectangle bounds = new Rectangle(
                     (int)position.Value.X,

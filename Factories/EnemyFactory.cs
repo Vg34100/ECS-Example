@@ -6,7 +6,7 @@ using Microsoft.Xna.Framework;
 
 public static class EnemyFactory
 {
-    public static Entity CreatePatrolEnemy(World world, Vector2 position, float speed, bool avoidFalling, Color color)
+    public static Entity CreatePatrolEnemy(World world, Vector2 position, float speed, bool avoidFalling, Color color, int health = 1)
     {
         var enemy = world.CreateEntity();
 
@@ -23,7 +23,7 @@ public static class EnemyFactory
             new Rectangle(0, 0, 32, 32),
             Collider.ColliderType.Dynamic
         ));
-        world.AddComponent(enemy, new Health(1));
+        world.AddComponent(enemy, new Health(health));
         world.AddComponent(enemy, new Damager(1, DamageType.Contact));
         world.AddComponent(enemy, new Bounceable(-300));
 

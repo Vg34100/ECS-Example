@@ -37,6 +37,15 @@ namespace ECS_Example.Factories
             world.AddComponent(player, new InvulnerableSettings(1.0f));
             world.AddComponent(player, new StunSettings(0.5f));
 
+            // Attack component
+            world.AddComponent(player, new Attack(
+                damage: 1,
+                hitboxSize: new Vector2(50, 80),  // Square attack hitbox
+                hitboxOffsetX: 0,                 // Not needed with our new positioning logic
+                cooldown: 0.3f,
+                duration: 0.15f                   // Attack persists for 0.15 seconds
+            ));
+
             return player;
         }
     }

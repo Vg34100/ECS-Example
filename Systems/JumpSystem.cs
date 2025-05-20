@@ -10,6 +10,7 @@ namespace ECS_Example.Systems
         public void Update(World world)
         {
             var keyboardState = Keyboard.GetState();
+            var gamePadState = GamePad.GetState(PlayerIndex.One);
 
             foreach (var entity in world.GetEntities())
             {
@@ -19,6 +20,11 @@ namespace ECS_Example.Systems
                     continue;
 
                 if (keyboardState.IsKeyDown(Keys.Space) && gravity.IsGrounded)
+                {
+                    velocity.Value.Y = jump.JumpVelocity;
+                    world.AddComponent(entity, velocity);
+                }
+                if (gamePadState.IsButtonDown(Buttons.A) && gravity.IsGrounded)
                 {
                     velocity.Value.Y = jump.JumpVelocity;
                     world.AddComponent(entity, velocity);
