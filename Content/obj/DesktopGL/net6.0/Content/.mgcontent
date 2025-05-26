@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<SourceFileCollection xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Profile>Reach</Profile>
+  <Platform>DesktopGL</Platform>
+  <Config />
+  <SourceFiles>
+    <File>A:/Projects/The Game Lab/MonoGame/ECS-Example/ECS-Example/Content/../Levels/test-tiles/simplified/Level_0/_composite.png</File>
+    <File>A:/Projects/The Game Lab/MonoGame/ECS-Example/ECS-Example/Content/../Levels/test-tiles/simplified/Level_0/Ground.png</File>
+    <File>A:/Projects/The Game Lab/MonoGame/ECS-Example/ECS-Example/Content/../Levels/test-tiles/simplified/Level_1/_composite.png</File>
+    <File>A:/Projects/The Game Lab/MonoGame/ECS-Example/ECS-Example/Content/../Levels/test-tiles/simplified/Level_1/Ground.png</File>
+    <File>A:/Projects/The Game Lab/MonoGame/ECS-Example/ECS-Example/Content/monochrome_tilemap_packed.png</File>
+  </SourceFiles>
+  <DestFiles>
+    <File>Level_0_composite.png</File>
+    <File>Level_0_Ground.png</File>
+    <File>Level_1_composite.png</File>
+    <File>Level_1_Ground.png</File>
+    <File xsi:nil="true" />
+  </DestFiles>
+</SourceFileCollection>
