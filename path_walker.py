@@ -162,3 +162,10 @@ print_directory_structure(
     accepted=('.cs'),
     custom_ignore_patterns=['*build*', '*gradle', 'path_walker.py', '.gitignore', 'README.md', '*bin*', '*Debug*']  # Add any patterns you want to ignore
 )
+
+print_directory_structure(
+    './Levels',
+    f"docs/history/levels_{timestamp}.txt",
+    accepted=('.json', '.png', '.csv'),
+    custom_ignore_patterns=['*build*', '*gradle', 'path_walker.py', '.gitignore', 'README.md', '*bin*', '*Debug*']  # Add any patterns you want to ignore
+)
