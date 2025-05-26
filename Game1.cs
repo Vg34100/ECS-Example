@@ -42,6 +42,9 @@ namespace ECS_Example
         // controller
         private float _deadZoneThreshold = 0.2f;
 
+        // camera
+        private CameraSystem _cameraSystem;
+
         public Game1()
         {
             _graphics = new GraphicsDeviceManager(this);
@@ -63,6 +66,8 @@ namespace ECS_Example
         protected override void Initialize()
         {
             _world = new World();
+
+
 
             var playerEntity = PlayerFactory.CreatePlayer(_world, new Vector2(100, 300));
 
@@ -115,6 +120,15 @@ namespace ECS_Example
 
             _attackSystem = new AttackSystem();
 
+            // Create camera entity
+            var cameraEntity = _world.CreateEntity();
+            _world.AddComponent(cameraEntity, new Camera(
+                initialPosition: Vector2.Zero,
+                lagFactor: 0.9f, // Adjust this for more/less lag (0.1f = very responsive, 0.3f = more laggy)
+                offset: new Vector2(0, -50)
+            ));
+            _cameraSystem = new CameraSystem(new Vector2(_graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight));
+
             base.Initialize();
         }
 
@@ -136,7 +150,7 @@ namespace ECS_Example
         protected override void LoadContent()
         {
             _spriteBatch = new SpriteBatch(GraphicsDevice);
-            _renderSystem = new RenderSystem(_spriteBatch, GraphicsDevice);
+            _renderSystem = new RenderSystem(_spriteBatch, GraphicsDevice, _cameraSystem);
         }
 
         protected override void Update(GameTime gameTime)
@@ -170,6 +184,8 @@ namespace ECS_Example
             _stunSystem.Update(_world, deltaTime);
 
             _attackSystem.Update(_world, deltaTime);
+
+            _cameraSystem.Update(_world, deltaTime);
 
             base.Update(gameTime);
         }

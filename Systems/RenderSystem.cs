@@ -11,10 +11,12 @@ namespace ECS_Example.Systems
         private SpriteBatch _spriteBatch;
         private Texture2D _whiteTexture;
         private bool _debug = true;
+        private CameraSystem _cameraSystem;
 
-        public RenderSystem(SpriteBatch spriteBatch, GraphicsDevice graphicsDevice)
+        public RenderSystem(SpriteBatch spriteBatch, GraphicsDevice graphicsDevice, CameraSystem cameraSystem)
         {
             _spriteBatch = spriteBatch;
+            _cameraSystem = cameraSystem;
 
             // Create a 1x1 white texture for drawing shapes
             _whiteTexture = new Texture2D(graphicsDevice, 1, 1);
@@ -23,7 +25,8 @@ namespace ECS_Example.Systems
 
         public void Draw(World world)
         {
-            _spriteBatch.Begin();
+            var viewMatrix = _cameraSystem.GetViewMatrix(world);
+            _spriteBatch.Begin(transformMatrix: viewMatrix);
 
             foreach (var entity in world.GetEntities())
             {

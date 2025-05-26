@@ -34,6 +34,11 @@ namespace ECS_Example
         // attack
         private Dictionary<int, Attack> _attacks = new Dictionary<int, Attack>();
 
+        // camera
+        private Dictionary<int, Camera> _cameras = new Dictionary<int, Camera>();
+        private Dictionary<int, CameraTarget> _cameraTargets = new Dictionary<int, CameraTarget>();
+
+
 
         public Entity CreateEntity()
         {
@@ -103,6 +108,10 @@ namespace ECS_Example
                 _stunSettings[entity.Id] = (StunSettings)(object)component;
             else if (typeof(T) == typeof(Attack))
                 _attacks[entity.Id] = (Attack)(object)component;
+            else if (typeof(T) == typeof(Camera))
+                _cameras[entity.Id] = (Camera)(object)component;
+            else if (typeof(T) == typeof(CameraTarget))
+                _cameraTargets[entity.Id] = (CameraTarget)(object)component;
 
         }
 
@@ -118,6 +127,10 @@ namespace ECS_Example
                 _invulnerableSettings.Remove(entity.Id);
             else if (typeof(T) == typeof(Attack))
                 _attacks.Remove(entity.Id);
+            else if (typeof(T) == typeof(Camera))
+                _cameras.Remove(entity.Id);
+            else if (typeof(T) == typeof(CameraTarget))
+                _cameraTargets.Remove(entity.Id);
         }
 
         public bool TryGetComponent<T>(Entity entity, out T component)
@@ -212,6 +225,16 @@ namespace ECS_Example
             else if (typeof(T) == typeof(Attack) && _attacks.TryGetValue(entity.Id, out var attack))
             {
                 component = (T)(object)attack;
+                return true;
+            }
+            else if (typeof(T) == typeof(Camera) && _cameras.TryGetValue(entity.Id, out var camera))
+            {
+                component = (T)(object)camera;
+                return true;
+            }
+            else if (typeof(T) == typeof(CameraTarget) && _cameraTargets.TryGetValue(entity.Id, out var cameraTarget))
+            {
+                component = (T)(object)cameraTarget;
                 return true;
             }
 

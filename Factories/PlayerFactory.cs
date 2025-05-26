@@ -46,6 +46,9 @@ namespace ECS_Example.Factories
                 duration: 0.15f                   // Attack persists for 0.15 seconds
             ));
 
+            // Camera target
+            world.AddComponent(player, new CameraTarget(true));
+
             return player;
         }
     }
