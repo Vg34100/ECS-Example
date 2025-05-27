@@ -12,9 +12,11 @@
 			"dir": "w"
 		}
 	],
-	"customFields" : {},
+	"customFields": {
+		"RoomType": null
+	},
 	"layers": [
-		"Ground.png"
+		"Tiles.png"
 	],
 	"entities": {
 		"Enemy": [
@@ -39,6 +41,26 @@
 				"height": 16,
 				"color": 14107459,
 				"customFields" : {}
+			}
+		],
+		"Path": [
+			{
+				"id": "Path",
+				"iid": "106f8fd0-3740-11f0-8727-43600886a250",
+				"layer": "Entities",
+				"x": 8,
+				"y": 112,
+				"width": 16,
+				"height": 48,
+				"color": 11196906,
+				"customFields": {
+					"nextDoor": {
+						"entityIid": "0d1e6900-3740-11f0-8727-b59144827153",
+						"layerIid": "5a5991a0-3740-11f0-9759-7d947df6fa38",
+						"levelIid": "fb1787b0-3740-11f0-9759-1106c0b1459a",
+						"worldIid": "fb1760a0-3740-11f0-9759-dfe8e3ae6d6a"
+					}
+				}
 			}
 		]
 	}

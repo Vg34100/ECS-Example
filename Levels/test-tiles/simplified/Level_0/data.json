@@ -12,9 +12,11 @@
 			"dir": "e"
 		}
 	],
-	"customFields" : {},
+	"customFields": {
+		"RoomType": "Start"
+	},
 	"layers": [
-		"Ground.png"
+		"Tiles.png"
 	],
 	"entities": {
 		"Player": [
@@ -26,7 +28,7 @@
 				"y": 48,
 				"width": 16,
 				"height": 16,
-				"color": 12470831,
+				"color": 3128910,
 				"customFields" : {}
 			}
 		],
@@ -63,6 +65,26 @@
 				"height": 16,
 				"color": 14107459,
 				"customFields" : {}
+			}
+		],
+		"Path": [
+			{
+				"id": "Path",
+				"iid": "0d1e6900-3740-11f0-8727-b59144827153",
+				"layer": "Entities",
+				"x": 424,
+				"y": 112,
+				"width": 16,
+				"height": 48,
+				"color": 11196906,
+				"customFields": {
+					"nextDoor": {
+						"entityIid": "106f8fd0-3740-11f0-8727-43600886a250",
+						"layerIid": "64a73401-3740-11f0-9759-a39eefb02eb7",
+						"levelIid": "64a73400-3740-11f0-9759-bd16600edb84",
+						"worldIid": "fb1760a0-3740-11f0-9759-dfe8e3ae6d6a"
+					}
+				}
 			}
 		]
 	}
