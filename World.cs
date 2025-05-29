@@ -38,7 +38,10 @@ namespace ECS_Example
         private Dictionary<int, Camera> _cameras = new Dictionary<int, Camera>();
         private Dictionary<int, CameraTarget> _cameraTargets = new Dictionary<int, CameraTarget>();
 
-
+        // level system
+        private Dictionary<int, LevelComponent> _levelComponents = new Dictionary<int, LevelComponent>();
+        private Dictionary<int, PathComponent> _pathComponents = new Dictionary<int, PathComponent>();
+        private Dictionary<int, WallCollision> _wallCollisions = new Dictionary<int, WallCollision>();
 
         public Entity CreateEntity()
         {
@@ -68,6 +71,9 @@ namespace ECS_Example
             _stunnedStates.Remove(entity.Id);
             _invulnerableSettings.Remove(entity.Id);
             _stunSettings.Remove(entity.Id);
+            _levelComponents.Remove(entity.Id);
+            _pathComponents.Remove(entity.Id);
+            _wallCollisions.Remove(entity.Id);
         }
 
         public void AddComponent<T>(Entity entity, T component)
@@ -112,6 +118,12 @@ namespace ECS_Example
                 _cameras[entity.Id] = (Camera)(object)component;
             else if (typeof(T) == typeof(CameraTarget))
                 _cameraTargets[entity.Id] = (CameraTarget)(object)component;
+            else if (typeof(T) == typeof(LevelComponent))
+                _levelComponents[entity.Id] = (LevelComponent)(object)component;
+            else if (typeof(T) == typeof(PathComponent))
+                _pathComponents[entity.Id] = (PathComponent)(object)component;
+            else if (typeof(T) == typeof(WallCollision))
+                _wallCollisions[entity.Id] = (WallCollision)(object)component;
 
         }
 
@@ -131,6 +143,13 @@ namespace ECS_Example
                 _cameras.Remove(entity.Id);
             else if (typeof(T) == typeof(CameraTarget))
                 _cameraTargets.Remove(entity.Id);
+            else if (typeof(T) == typeof(LevelComponent))
+                _levelComponents.Remove(entity.Id);
+            else if (typeof(T) == typeof(PathComponent))
+                _pathComponents.Remove(entity.Id);
+            else if (typeof(T) == typeof(WallCollision))
+                _wallCollisions.Remove(entity.Id);
+
         }
 
         public bool TryGetComponent<T>(Entity entity, out T component)
@@ -235,6 +254,21 @@ namespace ECS_Example
             else if (typeof(T) == typeof(CameraTarget) && _cameraTargets.TryGetValue(entity.Id, out var cameraTarget))
             {
                 component = (T)(object)cameraTarget;
+                return true;
+            }
+            else if (typeof(T) == typeof(LevelComponent) && _levelComponents.TryGetValue(entity.Id, out var levelComponent))
+            {
+                component = (T)(object)levelComponent;
+                return true;
+            }
+            else if (typeof(T) == typeof(PathComponent) && _pathComponents.TryGetValue(entity.Id, out var pathComponent))
+            {
+                component = (T)(object)pathComponent;
+                return true;
+            }
+            else if (typeof(T) == typeof(WallCollision) && _wallCollisions.TryGetValue(entity.Id, out var wallCollision))
+            {
+                component = (T)(object)wallCollision;
                 return true;
             }
 

@@ -24,9 +24,7 @@ A:\Projects\The Game Lab\MonoGame\ECS-Example\ECS-Example\obj\Debug\net6.0\ECS-E
 A:\Projects\The Game Lab\MonoGame\ECS-Example\ECS-Example\obj\Debug\net6.0\ECS-Example.genruntimeconfig.cache
 A:\Projects\The Game Lab\MonoGame\ECS-Example\ECS-Example\obj\Debug\net6.0\ref\ECS-Example.dll
 A:\Projects\The Game Lab\MonoGame\ECS-Example\ECS-Example\obj\Debug\net6.0\ECS-Example.sourcelink.json
-A:\Projects\The Game Lab\MonoGame\ECS-Example\ECS-Example\bin\Debug\net6.0\Content\Level_0_composite.xnb
 A:\Projects\The Game Lab\MonoGame\ECS-Example\ECS-Example\bin\Debug\net6.0\Content\Level_0_Ground.xnb
-A:\Projects\The Game Lab\MonoGame\ECS-Example\ECS-Example\bin\Debug\net6.0\Content\Level_1_composite.xnb
 A:\Projects\The Game Lab\MonoGame\ECS-Example\ECS-Example\bin\Debug\net6.0\Content\Level_1_Ground.xnb
 A:\Projects\The Game Lab\MonoGame\ECS-Example\ECS-Example\bin\Debug\net6.0\Content\monochrome_tilemap_packed.xnb
 A:\Projects\The Game Lab\MonoGame\ECS-Example\ECS-Example\bin\Debug\net6.0\Newtonsoft.Json.dll

@@ -33,11 +33,30 @@ namespace ECS_Example.Systems
             if (targetEntity != null && world.TryGetComponent<Position>(targetEntity, out var targetPos))
             {
                 // Calculate target camera position (center the target on screen)
-                camera.TargetPosition = targetPos.Value - _screenCenter + camera.Offset;
+                camera.TargetPosition = targetPos.Value - (_screenCenter / camera.Zoom) + (camera.Offset / camera.Zoom);
 
-                // Apply lag/smoothing using linear interpolation
+                // Calculate distance to target
                 Vector2 difference = camera.TargetPosition - camera.Position;
-                camera.Position += difference * (1.0f - camera.LagFactor);
+                float distance = difference.Length();
+
+                // Only move camera if beyond dampening threshold
+                if (distance > camera.DampeningThreshold)
+                {
+                    // Smooth velocity-based movement
+                    Vector2 desiredVelocity = difference * (1.0f - camera.LagFactor) * 60.0f; // Scale by 60 for frame rate independence
+
+                    // Apply some velocity dampening to reduce jitter
+                    camera.Velocity = Vector2.Lerp(camera.Velocity, desiredVelocity, 0.8f * deltaTime * 60.0f);
+
+                    // Apply velocity to position
+                    camera.Position += camera.Velocity * deltaTime;
+                }
+                else
+                {
+                    // Gradually reduce velocity when close to target
+                    camera.Velocity = Vector2.Lerp(camera.Velocity, Vector2.Zero, 0.9f * deltaTime * 60.0f);
+                    camera.Position += camera.Velocity * deltaTime;
+                }
 
                 // Update the camera component
                 world.AddComponent(cameraEntity, camera);
@@ -52,7 +71,8 @@ namespace ECS_Example.Systems
 
             if (cameraEntity != null && world.TryGetComponent<Camera>(cameraEntity, out var camera))
             {
-                return Matrix.CreateTranslation(-camera.Position.X, -camera.Position.Y, 0);
+                return Matrix.CreateTranslation(-camera.Position.X, -camera.Position.Y, 0) *
+                       Matrix.CreateScale(camera.Zoom, camera.Zoom, 1.0f);
             }
 
             return Matrix.Identity;

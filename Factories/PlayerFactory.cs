@@ -16,20 +16,20 @@ namespace ECS_Example.Factories
             world.AddComponent(player, new Shape(
                 Shape.ShapeType.Rectangle,
                 Color.Green,
-                new Vector2(32, 48)
+                new Vector2(12, 12)
             ));
 
             // Physics
             world.AddComponent(player, new Velocity(0, 0));
-            world.AddComponent(player, new Gravity(980));
+            world.AddComponent(player, new Gravity(800));
             world.AddComponent(player, new Collider(
-                new Rectangle(0, 0, 32, 48),
+                new Rectangle(0, 0, 12, 12),
                 Collider.ColliderType.Dynamic
             ));
 
             // Player-specific
-            world.AddComponent(player, new PlayerController(200));
-            world.AddComponent(player, new Jump(-500));
+            world.AddComponent(player, new PlayerController(90));
+            world.AddComponent(player, new Jump(-200));
 
             // Combat
             world.AddComponent(player, new Health(3));

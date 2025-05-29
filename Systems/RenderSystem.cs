@@ -10,7 +10,7 @@ namespace ECS_Example.Systems
     {
         private SpriteBatch _spriteBatch;
         private Texture2D _whiteTexture;
-        private bool _debug = true;
+        private bool _debug = false;
         private CameraSystem _cameraSystem;
 
         public RenderSystem(SpriteBatch spriteBatch, GraphicsDevice graphicsDevice, CameraSystem cameraSystem)

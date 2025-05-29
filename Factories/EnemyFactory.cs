@@ -14,13 +14,13 @@ public static class EnemyFactory
         world.AddComponent(enemy, new Shape(
             Shape.ShapeType.Rectangle,
             color,
-            new Vector2(32, 32)
+            new Vector2(12, 12)
         ));
         world.AddComponent(enemy, new Velocity(0, 0));
         world.AddComponent(enemy, new Patrol(speed, avoidFalling));
         world.AddComponent(enemy, new Gravity(980));
         world.AddComponent(enemy, new Collider(
-            new Rectangle(0, 0, 32, 32),
+            new Rectangle(0, 0, 12, 12),
             Collider.ColliderType.Dynamic
         ));
         world.AddComponent(enemy, new Health(health));

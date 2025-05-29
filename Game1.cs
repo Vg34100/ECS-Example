@@ -6,6 +6,9 @@ using ECS_Example.Components;
 using ECS_Example.Systems;
 using ECS_Example.Factories;
 using System.Linq;
+using ECS_Example.LevelData;
+using System;
+using System.Diagnostics;
 
 namespace ECS_Example
 {
@@ -45,6 +48,13 @@ namespace ECS_Example
         // camera
         private CameraSystem _cameraSystem;
 
+        // level system
+        private LevelRenderSystem _levelRenderSystem;
+        private LevelCollisionSystem _levelCollisionSystem;
+        private LevelManagerSystem _levelManagerSystem;
+
+        private LevelEntitySystem _levelEntitySystem;
+
         public Game1()
         {
             _graphics = new GraphicsDeviceManager(this);
@@ -69,36 +79,36 @@ namespace ECS_Example
 
 
 
-            var playerEntity = PlayerFactory.CreatePlayer(_world, new Vector2(100, 300));
+            //var playerEntity = PlayerFactory.CreatePlayer(_world, new Vector2(100, -300));
 
-            // Create the ground
-            var groundEntity = _world.CreateEntity();
-            _world.AddComponent(groundEntity, new Position(0, 450));
-            _world.AddComponent(groundEntity, new Shape(
-                Shape.ShapeType.Rectangle,
-                Color.Brown,
-                new Vector2(800, 50)
-            ));
-            _world.AddComponent(groundEntity, new Collider(
-                new Rectangle(0, 0, 800, 50),
-                Collider.ColliderType.Static
-            ));
+            //// Create the ground
+            //var groundEntity = _world.CreateEntity();
+            //_world.AddComponent(groundEntity, new Position(0, 450));
+            //_world.AddComponent(groundEntity, new Shape(
+            //    Shape.ShapeType.Rectangle,
+            //    Color.Brown,
+            //    new Vector2(800, 50)
+            //));
+            //_world.AddComponent(groundEntity, new Collider(
+            //    new Rectangle(0, 0, 800, 50),
+            //    Collider.ColliderType.Static
+            //));
 
             // Create some platforms
-            CreatePlatform(200, 350, 100, 20);
-            CreatePlatform(400, 250, 150, 20);
-            CreatePlatform(600, 350, 100, 20);
+            //CreatePlatform(200, 350, 100, 20);
+            //CreatePlatform(400, 250, 150, 20);
+            //CreatePlatform(600, 350, 100, 20);
 
-            CreatePlatform(200, 425, 100, 20);
+            //CreatePlatform(200, 425, 100, 20);
 
-            CreatePlatform(600, 425, 100, 20);
+            //CreatePlatform(600, 425, 100, 20);
 
-            // Goomba-style enemy (will walk off edges) - Red
-            EnemyFactory.CreatePatrolEnemy(_world, new Vector2(300, 400), 100, false, Color.Red, 20);
+            //// Goomba-style enemy (will walk off edges) - Red
+            //EnemyFactory.CreatePatrolEnemy(_world, new Vector2(300, 400), 100, false, Color.Red, 20);
 
-            // Koopa-style enemy (avoids edges) - Orange
-            EnemyFactory.CreatePatrolEnemy(_world, new Vector2(200, 300), 100, true, Color.Orange);
-            EnemyFactory.CreatePatrolEnemy(_world, new Vector2(400, 200), 100, true, Color.Orange);
+            //// Koopa-style enemy (avoids edges) - Orange
+            //EnemyFactory.CreatePatrolEnemy(_world, new Vector2(200, 300), 100, true, Color.Orange);
+            //EnemyFactory.CreatePatrolEnemy(_world, new Vector2(400, 200), 100, true, Color.Orange);
 
             // Initialize systems
             _playerMovementSystem = new PlayerMovementSystem();
@@ -119,15 +129,34 @@ namespace ECS_Example
             _stunSystem = new StunSystem();
 
             _attackSystem = new AttackSystem();
+            _levelEntitySystem = new LevelEntitySystem();
 
             // Create camera entity
             var cameraEntity = _world.CreateEntity();
             _world.AddComponent(cameraEntity, new Camera(
                 initialPosition: Vector2.Zero,
-                lagFactor: 0.9f, // Adjust this for more/less lag (0.1f = very responsive, 0.3f = more laggy)
-                offset: new Vector2(0, -50)
+                lagFactor: 0.97f, // Adjust this for more/less lag (0.1f = very responsive, 0.3f = more laggy)
+                offset: new Vector2(0, -50),
+                zoom: 3.0f,
+                dampeningThreshold: 5.0f
             ));
             _cameraSystem = new CameraSystem(new Vector2(_graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight));
+
+            //try
+            //{
+            //    var levels = Level.LoadLevelsFromDirectory("../../..", GraphicsDevice);
+            //    Debug.WriteLine($"Loaded {levels.Count} levels");
+
+            //    foreach (var level in levels)
+            //    {
+            //        level.PrintTileData();
+            //        level.PrintEntities();
+            //    }
+            //}
+            //catch (Exception ex)
+            //{
+            //    Debug.WriteLine($"Failed to load levels: {ex.Message}");
+            //}
 
             base.Initialize();
         }
@@ -151,6 +180,14 @@ namespace ECS_Example
         {
             _spriteBatch = new SpriteBatch(GraphicsDevice);
             _renderSystem = new RenderSystem(_spriteBatch, GraphicsDevice, _cameraSystem);
+
+            // Initialize level systems
+            _levelRenderSystem = new LevelRenderSystem(_spriteBatch, _cameraSystem);
+            _levelCollisionSystem = new LevelCollisionSystem();
+            _levelManagerSystem = new LevelManagerSystem();
+
+            // Load all levels into the world
+            _levelManagerSystem.LoadAllLevels(_world, "../../..", GraphicsDevice);
         }
 
         protected override void Update(GameTime gameTime)
@@ -187,12 +224,17 @@ namespace ECS_Example
 
             _cameraSystem.Update(_world, deltaTime);
 
+            _levelCollisionSystem.Update(_world);
+            _levelEntitySystem.Update(_world);
+
             base.Update(gameTime);
         }
 
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Color.CornflowerBlue);
+            GraphicsDevice.Clear(Color.Black);
+
+            _levelRenderSystem.Draw(_world);
 
             _renderSystem.Draw(_world);
 

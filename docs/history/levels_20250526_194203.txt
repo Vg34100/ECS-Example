@@ -1,0 +1,293 @@
+Scan Report
+===========
+Date: 2025-05-26 19:42:04
+Source Directory: A:\Projects\The Game Lab\MonoGame\ECS-Example\ECS-Example\Levels
+Output File: A:\Projects\The Game Lab\MonoGame\ECS-Example\ECS-Example\docs\history\levels_20250526_194203.txt
+
+Ignored Patterns:
+================
+- *Debug*
+- *bin*
+- *build*
+- *gradle
+- .gitignore
+- README.md
+- path_walker.py
+
+Directory Structure:
+===================
+
+Levels/
+  monochrome_tilemap_packed.png
+  monochrome_tilemap_transparent_packed.png
+  test-tiles/
+    simplified/
+      Level_0/
+        Tiles-int.png
+        Tiles.csv
+        Tiles.png
+        _bg.png
+        _composite.png
+        data.json
+      Level_1/
+        Tiles-int.png
+        Tiles.csv
+        Tiles.png
+        _bg.png
+        _composite.png
+        data.json
+
+
+File Contents:
+=============
+
+
+--- monochrome_tilemap_packed.png ---
+
+Error reading file: 'utf-8' codec can't decode byte 0x89 in position 0: invalid start byte
+
+
+--- monochrome_tilemap_transparent_packed.png ---
+
+Error reading file: 'utf-8' codec can't decode byte 0x89 in position 0: invalid start byte
+
+
+--- test-tiles\simplified\Level_0\Tiles-int.png ---
+
+Error reading file: 'utf-8' codec can't decode byte 0x89 in position 0: invalid start byte
+
+
+--- test-tiles\simplified\Level_0\Tiles.csv ---
+1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+1,2,2,2,2,0,0,0,0,0,0,1,1,0,1,1,0,0,0,0,0,0,0,0,0,0,1,
+1,2,2,2,2,2,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+1,2,2,0,2,2,1,0,0,0,0,1,1,0,0,0,0,1,1,0,0,0,0,0,0,0,0,
+1,2,0,0,2,0,1,1,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,
+1,0,0,0,0,0,1,1,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,
+1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,1,1,1,
+1,0,0,0,0,0,0,0,0,1,1,1,1,0,1,1,1,0,0,0,0,0,0,0,1,1,1,
+1,0,0,0,0,0,0,0,0,1,1,1,1,0,0,1,1,0,0,0,0,0,0,0,1,1,1,
+1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,1,1,
+1,1,0,0,1,0,1,1,1,1,0,0,0,0,0,1,0,0,1,0,0,0,0,0,0,1,1,
+1,1,1,1,1,0,1,0,0,0,0,0,0,0,0,1,0,0,1,1,0,0,0,0,0,1,1,
+1,1,1,1,1,0,1,0,0,0,1,1,1,1,1,1,0,0,1,1,2,0,0,0,2,2,2,
+1,1,1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,2,2,2,2,2,2,2,
+1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2
+
+
+--- test-tiles\simplified\Level_0\Tiles.png ---
+
+Error reading file: 'utf-8' codec can't decode byte 0x89 in position 0: invalid start byte
+
+
+--- test-tiles\simplified\Level_0\_bg.png ---
+
+Error reading file: 'utf-8' codec can't decode byte 0x89 in position 0: invalid start byte
+
+
+--- test-tiles\simplified\Level_0\_composite.png ---
+
+Error reading file: 'utf-8' codec can't decode byte 0x89 in position 0: invalid start byte
+
+
+--- test-tiles\simplified\Level_0\data.json ---
+{
+	"identifier": "Level_0",
+	"uniqueIdentifer": "fb1787b0-3740-11f0-9759-1106c0b1459a",
+	"x": -64,
+	"y": 0,
+	"width": 432,
+	"height": 256,
+	"bgColor": "#696A79",
+	"neighbourLevels": [
+		{
+			"levelIid": "64a73400-3740-11f0-9759-bd16600edb84",
+			"dir": "e"
+		}
+	],
+	"customFields": {
+		"RoomType": "Start"
+	},
+	"layers": [
+		"Tiles.png"
+	],
+	"entities": {
+		"Player": [
+			{
+				"id": "Player",
+				"iid": "69a76a60-3740-11f0-9759-ff5118542c39",
+				"layer": "Entities",
+				"x": 88,
+				"y": 48,
+				"width": 16,
+				"height": 16,
+				"color": 3128910,
+				"customFields" : {}
+			}
+		],
+		"Enemy": [
+			{
+				"id": "Enemy",
+				"iid": "6d3b1870-3740-11f0-9759-c18f805fe4f1",
+				"layer": "Entities",
+				"x": 104,
+				"y": 176,
+				"width": 16,
+				"height": 16,
+				"color": 14107459,
+				"customFields" : {}
+			},
+			{
+				"id": "Enemy",
+				"iid": "6f8b7110-3740-11f0-9759-ddf8b580b8f2",
+				"layer": "Entities",
+				"x": 328,
+				"y": 208,
+				"width": 16,
+				"height": 16,
+				"color": 14107459,
+				"customFields" : {}
+			},
+			{
+				"id": "Enemy",
+				"iid": "1412e790-3740-11f0-8727-99f6e93eda3b",
+				"layer": "Entities",
+				"x": 248,
+				"y": 80,
+				"width": 16,
+				"height": 16,
+				"color": 14107459,
+				"customFields" : {}
+			}
+		],
+		"Path": [
+			{
+				"id": "Path",
+				"iid": "0d1e6900-3740-11f0-8727-b59144827153",
+				"layer": "Entities",
+				"x": 424,
+				"y": 112,
+				"width": 16,
+				"height": 48,
+				"color": 11196906,
+				"customFields": {
+					"nextDoor": {
+						"entityIid": "106f8fd0-3740-11f0-8727-43600886a250",
+						"layerIid": "64a73401-3740-11f0-9759-a39eefb02eb7",
+						"levelIid": "64a73400-3740-11f0-9759-bd16600edb84",
+						"worldIid": "fb1760a0-3740-11f0-9759-dfe8e3ae6d6a"
+					}
+				}
+			}
+		]
+	}
+}
+
+--- test-tiles\simplified\Level_1\Tiles-int.png ---
+
+Error reading file: 'utf-8' codec can't decode byte 0x89 in position 0: invalid start byte
+
+
+--- test-tiles\simplified\Level_1\Tiles.csv ---
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+1,1,1,1,1,1,0,0,0,0,0,0,1,1,1,1,
+1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,1,
+1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,
+0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,
+0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,1,
+0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,1,
+1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+1,1,1,1,0,1,0,0,0,0,0,0,0,0,0,1,
+1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,
+1,1,2,2,0,0,0,0,1,0,0,0,0,0,0,1,
+1,2,2,2,0,0,0,1,1,1,1,1,1,0,0,1,
+1,2,2,0,0,0,0,1,1,1,1,1,0,0,0,1,
+1,2,2,2,0,0,0,0,0,0,0,0,0,0,0,1,
+1,2,2,2,0,0,0,0,0,0,0,0,0,0,0,1,
+1,2,2,2,2,0,0,0,0,0,1,1,1,1,1,1
+
+
+--- test-tiles\simplified\Level_1\Tiles.png ---
+
+Error reading file: 'utf-8' codec can't decode byte 0x89 in position 0: invalid start byte
+
+
+--- test-tiles\simplified\Level_1\_bg.png ---
+
+Error reading file: 'utf-8' codec can't decode byte 0x89 in position 0: invalid start byte
+
+
+--- test-tiles\simplified\Level_1\_composite.png ---
+
+Error reading file: 'utf-8' codec can't decode byte 0x89 in position 0: invalid start byte
+
+
+--- test-tiles\simplified\Level_1\data.json ---
+{
+	"identifier": "Level_1",
+	"uniqueIdentifer": "64a73400-3740-11f0-9759-bd16600edb84",
+	"x": 368,
+	"y": 0,
+	"width": 256,
+	"height": 256,
+	"bgColor": "#696A79",
+	"neighbourLevels": [
+		{
+			"levelIid": "fb1787b0-3740-11f0-9759-1106c0b1459a",
+			"dir": "w"
+		}
+	],
+	"customFields": {
+		"RoomType": null
+	},
+	"layers": [
+		"Tiles.png"
+	],
+	"entities": {
+		"Enemy": [
+			{
+				"id": "Enemy",
+				"iid": "8f671ca0-3740-11f0-9759-07003a2b8d4a",
+				"layer": "Entities",
+				"x": 168,
+				"y": 176,
+				"width": 16,
+				"height": 16,
+				"color": 14107459,
+				"customFields" : {}
+			},
+			{
+				"id": "Enemy",
+				"iid": "90a011d0-3740-11f0-9759-9776fb20eacb",
+				"layer": "Entities",
+				"x": 200,
+				"y": 240,
+				"width": 16,
+				"height": 16,
+				"color": 14107459,
+				"customFields" : {}
+			}
+		],
+		"Path": [
+			{
+				"id": "Path",
+				"iid": "106f8fd0-3740-11f0-8727-43600886a250",
+				"layer": "Entities",
+				"x": 8,
+				"y": 112,
+				"width": 16,
+				"height": 48,
+				"color": 11196906,
+				"customFields": {
+					"nextDoor": {
+						"entityIid": "0d1e6900-3740-11f0-8727-b59144827153",
+						"layerIid": "5a5991a0-3740-11f0-9759-7d947df6fa38",
+						"levelIid": "fb1787b0-3740-11f0-9759-1106c0b1459a",
+						"worldIid": "fb1760a0-3740-11f0-9759-dfe8e3ae6d6a"
+					}
+				}
+			}
+		]
+	}
+}
