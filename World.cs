@@ -41,7 +41,6 @@ namespace ECS_Example
         // level system
         private Dictionary<int, LevelComponent> _levelComponents = new Dictionary<int, LevelComponent>();
         private Dictionary<int, PathComponent> _pathComponents = new Dictionary<int, PathComponent>();
-        private Dictionary<int, WallCollision> _wallCollisions = new Dictionary<int, WallCollision>();
 
         public Entity CreateEntity()
         {
@@ -73,7 +72,6 @@ namespace ECS_Example
             _stunSettings.Remove(entity.Id);
             _levelComponents.Remove(entity.Id);
             _pathComponents.Remove(entity.Id);
-            _wallCollisions.Remove(entity.Id);
         }
 
         public void AddComponent<T>(Entity entity, T component)
@@ -122,8 +120,6 @@ namespace ECS_Example
                 _levelComponents[entity.Id] = (LevelComponent)(object)component;
             else if (typeof(T) == typeof(PathComponent))
                 _pathComponents[entity.Id] = (PathComponent)(object)component;
-            else if (typeof(T) == typeof(WallCollision))
-                _wallCollisions[entity.Id] = (WallCollision)(object)component;
 
         }
 
@@ -147,8 +143,7 @@ namespace ECS_Example
                 _levelComponents.Remove(entity.Id);
             else if (typeof(T) == typeof(PathComponent))
                 _pathComponents.Remove(entity.Id);
-            else if (typeof(T) == typeof(WallCollision))
-                _wallCollisions.Remove(entity.Id);
+
 
         }
 
@@ -264,11 +259,6 @@ namespace ECS_Example
             else if (typeof(T) == typeof(PathComponent) && _pathComponents.TryGetValue(entity.Id, out var pathComponent))
             {
                 component = (T)(object)pathComponent;
-                return true;
-            }
-            else if (typeof(T) == typeof(WallCollision) && _wallCollisions.TryGetValue(entity.Id, out var wallCollision))
-            {
-                component = (T)(object)wallCollision;
                 return true;
             }
 
