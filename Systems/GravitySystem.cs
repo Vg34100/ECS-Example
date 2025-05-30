@@ -9,23 +9,18 @@ namespace ECS_Example.Systems
 
         public void Update(World world, float deltaTime)
         {
-            foreach (var entity in world.GetEntities())
+            foreach (var entity in world.Query<Gravity, Velocity>())
             {
-                if (world.TryGetComponent<Gravity>(entity, out var gravity) &&
-                    world.TryGetComponent<Velocity>(entity, out var velocity))
-                {
-                    if (!gravity.IsGrounded)
-                    {
-                        // Apply gravity
-                        velocity.Value.Y += gravity.Value * deltaTime;
+                var gravity = world.GetComponent<Gravity>(entity);
+                if (gravity.IsGrounded) continue; // Skip grounded entities
 
-                        // Cap fall speed
-                        if (velocity.Value.Y > MAX_FALL_SPEED)
-                            velocity.Value.Y = MAX_FALL_SPEED;
+                var velocity = world.GetComponent<Velocity>(entity);
+                velocity.Value.Y += gravity.Value * deltaTime;
 
-                        world.AddComponent(entity, velocity);
-                    }
-                }
+                if (velocity.Value.Y > MAX_FALL_SPEED)
+                    velocity.Value.Y = MAX_FALL_SPEED;
+
+                world.AddComponent(entity, velocity);
             }
         }
     }
