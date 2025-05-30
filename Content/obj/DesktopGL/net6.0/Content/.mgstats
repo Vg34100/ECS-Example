@@ -1,2 +1,3 @@
 Source File,Dest File,Processor Type,Content Type,Source File Size,Dest File Size,Build Seconds
+"A:/Projects/The Game Lab/MonoGame/ECS-Example/ECS-Example/Content/Default.spritefont","A:/Projects/The Game Lab/MonoGame/ECS-Example/ECS-Example/Content/bin/DesktopGL/Content/Default.xnb","FontDescriptionProcessor","SpriteFontContent",2068,21535,0.2310301
 "A:/Projects/The Game Lab/MonoGame/ECS-Example/ECS-Example/Content/monochrome_tilemap_packed.png","A:/Projects/The Game Lab/MonoGame/ECS-Example/ECS-Example/Content/bin/DesktopGL/Content/monochrome_tilemap_packed.xnb","TextureProcessor","Texture2DContent",5233,409685,0.015716

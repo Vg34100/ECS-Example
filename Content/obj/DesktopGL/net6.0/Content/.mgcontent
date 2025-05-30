@@ -4,9 +4,11 @@
   <Platform>DesktopGL</Platform>
   <Config />
   <SourceFiles>
+    <File>A:/Projects/The Game Lab/MonoGame/ECS-Example/ECS-Example/Content/Default.spritefont</File>
     <File>A:/Projects/The Game Lab/MonoGame/ECS-Example/ECS-Example/Content/monochrome_tilemap_packed.png</File>
   </SourceFiles>
   <DestFiles>
+    <File xsi:nil="true" />
     <File xsi:nil="true" />
   </DestFiles>
 </SourceFileCollection>

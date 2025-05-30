@@ -28,3 +28,4 @@ A:\Projects\The Game Lab\MonoGame\ECS-Example\ECS-Example\bin\Debug\net6.0\Conte
 A:\Projects\The Game Lab\MonoGame\ECS-Example\ECS-Example\bin\Debug\net6.0\Content\Level_1_Ground.xnb
 A:\Projects\The Game Lab\MonoGame\ECS-Example\ECS-Example\bin\Debug\net6.0\Content\monochrome_tilemap_packed.xnb
 A:\Projects\The Game Lab\MonoGame\ECS-Example\ECS-Example\bin\Debug\net6.0\Newtonsoft.Json.dll
+A:\Projects\The Game Lab\MonoGame\ECS-Example\ECS-Example\bin\Debug\net6.0\Content\Default.xnb
