@@ -12,6 +12,7 @@ namespace ECS_Example
     {
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
+        private SpriteFont _font;
         private World _world;
         private SystemManager _systemManager;
         private CameraSystem _cameraSystem;
@@ -98,6 +99,7 @@ namespace ECS_Example
         protected override void LoadContent()
         {
             _spriteBatch = new SpriteBatch(GraphicsDevice);
+            _font = Content.Load<SpriteFont>("Default");
 
             // Add render systems after graphics are initialized
             _systemManager.AddSystem(new LevelRenderSystem(_spriteBatch, _cameraSystem));
