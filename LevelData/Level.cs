@@ -7,7 +7,7 @@ using System.Text.Json;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace ECS_Example.LevelData
+namespace ECS_Base.LevelData
 {
     public enum RoomType
     {

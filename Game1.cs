@@ -2,11 +2,15 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using ECS_Example.Components;
-using ECS_Example.Systems;
+using ECS_Base.Mechanics.Core;
+using ECS_Base.Mechanics.Camera.Systems;
+using ECS_Base.Mechanics.Level.Systems;
+using ECS_Base.Mechanics.Collision.Systems;
+using ECS_Base.Mechanics.Rendering.Systems;
+using ECS_Base.GameConfigs;
 using System.Linq;
 
-namespace ECS_Example
+namespace ECS_Base
 {
     public class Game1 : Game
     {
@@ -15,16 +19,23 @@ namespace ECS_Example
         private SpriteFont _font;
         private World _world;
         private SystemManager _systemManager;
-        private CameraSystem _cameraSystem;
-        private LevelManagerSystem _levelManagerSystem;
-        private DebugSystem _debugSystem;
-        private LevelCollisionSystem _levelCollisionSystem;
+        private IGameConfig _config;
 
-        public Game1()
+        // Public properties for systems that configs might need to set
+        public CameraSystem CameraSystem { get; set; }
+        public LevelManagerSystem LevelManagerSystem { get; set; }
+        public CollisionSystem CollisionSystem { get; set; }
+        public GraphicsDeviceManager GraphicsDeviceManager => _graphics;
+
+        public Game1(IGameConfig config)
         {
+            _config = config;
             _graphics = new GraphicsDeviceManager(this);
+            _graphics.PreferredBackBufferWidth = 1280;
+            _graphics.PreferredBackBufferHeight = 720;
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
+            Window.Title = $"ECS-Base - {config.Name}";
         }
 
         private void Restart()
@@ -43,57 +54,10 @@ namespace ECS_Example
             _world = new World();
             _systemManager = new SystemManager();
 
-            // Initialize systems in the order they should run
-            InitializeSystems();
-
-            // Create camera entity
-            CreateCameraEntity();
+            // Use the configuration to initialize systems and entities
+            _config.Initialize(this, _world, _systemManager);
 
             base.Initialize();
-        }
-
-        private void InitializeSystems()
-        {
-            // Movement and input systems (run first)
-            _systemManager.AddSystem(new PlayerMovementSystem());
-            _systemManager.AddSystem(new JumpSystem());
-            _systemManager.AddSystem(new InputSystem());
-
-            // Physics systems (run in sequence)
-            _systemManager.AddSystem(new GravitySystem());
-            _systemManager.AddSystem(new MovementSystem());
-            // Note: CollisionSystem will be added in LoadContent after debug system is created
-
-            // Combat and health systems
-            _systemManager.AddSystem(new DamageSystem());
-            _systemManager.AddSystem(new HealthSystem());
-            _systemManager.AddSystem(new AttackSystem());
-
-            // Visual feedback systems
-            _systemManager.AddSystem(new FlashSystem());
-            _systemManager.AddSystem(new StunSystem());
-
-            // Camera system (after movement)
-            _cameraSystem = new CameraSystem(new Vector2(_graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight));
-            _systemManager.AddSystem(_cameraSystem);
-
-            // Level manager (handles loading)
-            _levelManagerSystem = new LevelManagerSystem();
-
-            // Level systems
-            _systemManager.AddSystem(new LevelEntitySystem());
-        }
-
-        private void CreateCameraEntity()
-        {
-            var cameraEntity = _world.CreateEntity();
-            _world.AddComponent(cameraEntity, new Camera(
-                initialPosition: Vector2.Zero,
-                lagFactor: 0.97f,
-                offset: new Vector2(0, -50),
-                zoom: 3.0f,
-                dampeningThreshold: 5.0f
-            ));
         }
 
         protected override void LoadContent()
@@ -101,33 +65,57 @@ namespace ECS_Example
             _spriteBatch = new SpriteBatch(GraphicsDevice);
             _font = Content.Load<SpriteFont>("Default");
 
-            // Initialize debug system with required dependencies
-            _debugSystem = new DebugSystem(_spriteBatch, _font, _cameraSystem);
+            System.Console.WriteLine("=== LoadContent Started ===");
 
-            // Add systems that need debug system now that it's available
-            var patrolSystem = new PatrolSystem();
-            _systemManager.AddSystem(patrolSystem);
-            _systemManager.AddSystem(new CollisionSystem(_debugSystem));
+            // Add render systems if camera system exists
+            if (CameraSystem != null)
+            {
+                System.Console.WriteLine("Adding render systems...");
+                var renderSystem = new RenderSystem(_spriteBatch, GraphicsDevice, CameraSystem);
+                _systemManager.AddSystem(renderSystem);
+                _systemManager.AddSystem(new LevelRenderSystem(_spriteBatch, CameraSystem));
+            }
 
-            // Initialize level collision system with debug system
-            _levelCollisionSystem = new LevelCollisionSystem(_debugSystem);
-            _systemManager.AddSystem(_levelCollisionSystem);
+            // Load levels if level manager exists (platformer config)
+            if (LevelManagerSystem != null)
+            {
+                System.Console.WriteLine("Loading levels...");
+                // Use absolute path from the application's base directory
+                var levelsPath = System.IO.Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "../../../");
+                LevelManagerSystem.LoadAllLevels(_world, levelsPath, GraphicsDevice);
+            }
 
-            // Add render systems after graphics are initialized
-            _systemManager.AddSystem(new LevelRenderSystem(_spriteBatch, _cameraSystem));
-            var renderSystem = new RenderSystem(_spriteBatch, GraphicsDevice, _cameraSystem, _debugSystem);
-            renderSystem.SetPatrolSystem(patrolSystem); // Connect patrol system for accurate debug visualization
-            _systemManager.AddSystem(renderSystem);
-
-            // Add debug system to system manager
-            _systemManager.AddSystem(_debugSystem);
-
-            // Load all levels into the world
-            _levelManagerSystem.LoadAllLevels(_world, "../../..", GraphicsDevice);
-
-            // Debug: Print system info
+            // Debug info
+            System.Console.WriteLine("=== System Info ===");
             _systemManager.PrintSystemInfo();
+            System.Console.WriteLine("=== Component Stats ===");
             _world.PrintComponentStats();
+            System.Console.WriteLine($"Total entities: {_world.GetEntities().Count}");
+
+            // Write detailed entity info to debug file
+            var debugPath = System.IO.Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "debug.txt");
+            System.IO.File.AppendAllText(debugPath, $"\n=== After LoadContent ===\n");
+            System.IO.File.AppendAllText(debugPath, $"Total entities: {_world.GetEntities().Count}\n");
+
+            foreach (var entity in _world.GetEntities())
+            {
+                System.IO.File.AppendAllText(debugPath, $"\nEntity {entity.Id}:\n");
+
+                if (_world.TryGetComponent<ECS_Base.Mechanics.Movement.Components.PositionComponent>(entity, out var pos))
+                    System.IO.File.AppendAllText(debugPath, $"  Position: ({pos.Value.X}, {pos.Value.Y})\n");
+
+                if (_world.TryGetComponent<ECS_Base.Mechanics.Rendering.Components.ShapeComponent>(entity, out var shape))
+                    System.IO.File.AppendAllText(debugPath, $"  Shape: {shape.Type}, Color: {shape.Color}, Size: {shape.Size}\n");
+
+                if (_world.TryGetComponent<ECS_Base.Mechanics.Camera.Components.CameraComponent>(entity, out var cam))
+                    System.IO.File.AppendAllText(debugPath, $"  Camera: Pos({cam.Position.X}, {cam.Position.Y}), Zoom: {cam.Zoom}\n");
+
+                if (_world.TryGetComponent<ECS_Base.Mechanics.Level.Components.LevelComponent>(entity, out var level))
+                    System.IO.File.AppendAllText(debugPath, $"  Level: {level.LevelData.Identifier}\n");
+
+                if (_world.TryGetComponent<ECS_Base.Mechanics.PlayerController.Components.PlayerComponent>(entity, out var player))
+                    System.IO.File.AppendAllText(debugPath, $"  Player: Speed={player.MoveSpeed}, Jump={player.JumpForce}\n");
+            }
         }
 
         protected override void Update(GameTime gameTime)

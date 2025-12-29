@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PipelineBuildEvent xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-  <SourceFile>A:/Projects/The Game Lab/MonoGame/ECS-Example/ECS-Example/Content/Default.spritefont</SourceFile>
+  <SourceFile>A:/Projects/The Game Lab/MonoGame/ECS-Base/ECS-Base/Content/Default.spritefont</SourceFile>
   <SourceTime>2025-05-30T09:41:09.3456388-07:00</SourceTime>
-  <DestFile>A:/Projects/The Game Lab/MonoGame/ECS-Example/ECS-Example/Content/bin/DesktopGL/Content/Default.xnb</DestFile>
-  <DestTime>2025-05-30T09:41:11.8768976-07:00</DestTime>
+  <DestFile>A:/Projects/The Game Lab/MonoGame/ECS-Base/ECS-Base/Content/bin/DesktopGL/Content/Default.xnb</DestFile>
+  <DestTime>2025-07-06T16:39:57.8282989-07:00</DestTime>
   <Importer>FontDescriptionImporter</Importer>
   <ImporterTime>2022-07-26T04:44:56-07:00</ImporterTime>
   <Processor>FontDescriptionProcessor</Processor>
