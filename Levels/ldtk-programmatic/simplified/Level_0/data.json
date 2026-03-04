@@ -1,0 +1,194 @@
+{
+  "identifier": "Level_0",
+  "uniqueIdentifer": "fb1787b0-3740-11f0-9759-bd16600edb84",
+  "x": 0,
+  "y": 0,
+  "width": 2880,
+  "height": 256,
+  "bgColor": "#696A79",
+  "neighbourLevels": [],
+  "customFields": {
+    "RoomType": "Start"
+  },
+  "layers": [
+    "Tiles.png"
+  ],
+  "entities": {
+    "Player": [
+      {
+        "id": "Player",
+        "iid": "player-0",
+        "layer": "Entities",
+        "x": 32,
+        "y": 176,
+        "width": 16,
+        "height": 16,
+        "color": 3128910,
+        "customFields": {}
+      }
+    ],
+    "Enemy": [
+      {
+        "id": "Enemy",
+        "iid": "goomba-1",
+        "layer": "Entities",
+        "x": 240,
+        "y": 224,
+        "width": 16,
+        "height": 16,
+        "color": 14107459,
+        "customFields": {
+          "Kind": "Goomba"
+        }
+      },
+      {
+        "id": "Enemy",
+        "iid": "goomba-2",
+        "layer": "Entities",
+        "x": 520,
+        "y": 224,
+        "width": 16,
+        "height": 16,
+        "color": 14107459,
+        "customFields": {
+          "Kind": "Goomba"
+        }
+      },
+      {
+        "id": "Enemy",
+        "iid": "goomba-3",
+        "layer": "Entities",
+        "x": 880,
+        "y": 224,
+        "width": 16,
+        "height": 16,
+        "color": 14107459,
+        "customFields": {
+          "Kind": "Goomba"
+        }
+      }
+    ],
+    "Pickup": [
+      {
+        "id": "Pickup",
+        "iid": "coin-1",
+        "layer": "Entities",
+        "x": 304,
+        "y": 144,
+        "width": 16,
+        "height": 16,
+        "color": 0,
+        "customFields": {
+          "Kind": "Coin"
+        }
+      },
+      {
+        "id": "Pickup",
+        "iid": "coin-2",
+        "layer": "Entities",
+        "x": 320,
+        "y": 136,
+        "width": 16,
+        "height": 16,
+        "color": 0,
+        "customFields": {
+          "Kind": "Coin"
+        }
+      },
+      {
+        "id": "Pickup",
+        "iid": "coin-3",
+        "layer": "Entities",
+        "x": 336,
+        "y": 144,
+        "width": 16,
+        "height": 16,
+        "color": 0,
+        "customFields": {
+          "Kind": "Coin"
+        }
+      },
+      {
+        "id": "Pickup",
+        "iid": "coin-4",
+        "layer": "Entities",
+        "x": 640,
+        "y": 144,
+        "width": 16,
+        "height": 16,
+        "color": 0,
+        "customFields": {
+          "Kind": "Coin"
+        }
+      },
+      {
+        "id": "Pickup",
+        "iid": "coin-5",
+        "layer": "Entities",
+        "x": 656,
+        "y": 136,
+        "width": 16,
+        "height": 16,
+        "color": 0,
+        "customFields": {
+          "Kind": "Coin"
+        }
+      },
+      {
+        "id": "Pickup",
+        "iid": "coin-6",
+        "layer": "Entities",
+        "x": 672,
+        "y": 144,
+        "width": 16,
+        "height": 16,
+        "color": 0,
+        "customFields": {
+          "Kind": "Coin"
+        }
+      },
+      {
+        "id": "Pickup",
+        "iid": "star-1",
+        "layer": "Entities",
+        "x": 1500,
+        "y": 128,
+        "width": 16,
+        "height": 16,
+        "color": 0,
+        "customFields": {
+          "Kind": "Star"
+        }
+      },
+      {
+        "id": "Pickup",
+        "iid": "mushroom-1",
+        "layer": "Entities",
+        "x": 400,
+        "y": 144,
+        "width": 16,
+        "height": 16,
+        "color": 0,
+        "customFields": {
+          "Kind": "Mushroom"
+        }
+      }
+    ],
+    "Hazard": [
+      {
+        "id": "Hazard",
+        "iid": "spike-1",
+        "layer": "Entities",
+        "x": 928,
+        "y": 224,
+        "width": 16,
+        "height": 16,
+        "color": 0,
+        "customFields": {
+          "Kind": "Spike"
+        }
+      }
+    ],
+    "Path": []
+  }
+}

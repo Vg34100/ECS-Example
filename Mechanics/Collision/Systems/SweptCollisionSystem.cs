@@ -17,11 +17,15 @@ namespace ECS_Base.Mechanics.Collision.Systems
     {
         private const int TILE_SIZE = 16;
         private List<Rectangle> _solidObjects = new List<Rectangle>();
+        private HashSet<int> _solidValues = null;
+        private HashSet<int> _waterValues = null;
+        private bool _waterIsSolid = true;
 
         public void Update(World world, float deltaTime)
         {
             // Collect all solid objects (shared with regular collision system)
             _solidObjects.Clear();
+            UpdateTileCollisionConfig(world);
 
             // Collect tiles from levels
             foreach (var entity in world.GetEntities())
@@ -225,7 +229,8 @@ namespace ECS_Base.Mechanics.Collision.Systems
             {
                 for (int col = 0; col < cols; col++)
                 {
-                    if (level.TileData[row, col] > 0)
+                    int value = level.TileData[row, col];
+                    if (IsSolidTile(value))
                     {
                         _solidObjects.Add(new Rectangle(
                             level.X + (col * TILE_SIZE),
@@ -236,6 +241,33 @@ namespace ECS_Base.Mechanics.Collision.Systems
                     }
                 }
             }
+        }
+
+        private void UpdateTileCollisionConfig(World world)
+        {
+            foreach (var entity in world.Query<LevelCollisionConfigComponent>())
+            {
+                var config = world.GetComponent<LevelCollisionConfigComponent>(entity);
+                _solidValues = config.SolidValues;
+                _waterValues = config.WaterValues;
+                _waterIsSolid = config.WaterIsSolid;
+                return;
+            }
+
+            _solidValues = null;
+            _waterValues = null;
+            _waterIsSolid = true;
+        }
+
+        private bool IsSolidTile(int value)
+        {
+            if (_solidValues == null)
+                return value > 0;
+
+            if (_waterValues != null && _waterValues.Contains(value))
+                return _waterIsSolid;
+
+            return _solidValues.Contains(value);
         }
 
         private void UpdateGroundedState(Entity entity, World world, PositionComponent position,

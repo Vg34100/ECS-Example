@@ -84,9 +84,10 @@ namespace ECS_Base
                     _systemManager.AddSystem(SpriteSystem);
                 }
 
+                _systemManager.AddSystem(new LevelTilesetLoaderSystem(GraphicsDevice));
+                _systemManager.AddSystem(new LevelRenderSystem(_spriteBatch, CameraSystem));
                 var renderSystem = new RenderSystem(_spriteBatch, GraphicsDevice, CameraSystem);
                 _systemManager.AddSystem(renderSystem);
-                _systemManager.AddSystem(new LevelRenderSystem(_spriteBatch, CameraSystem));
                 _systemManager.AddSystem(new WorldIconSystem(_spriteBatch, GraphicsDevice, CameraSystem));
                 _systemManager.AddSystem(new RotatedRectSystem(_spriteBatch, GraphicsDevice, CameraSystem));
 

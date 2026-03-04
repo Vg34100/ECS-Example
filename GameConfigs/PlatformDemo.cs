@@ -373,68 +373,6 @@ namespace ECS_Base.GameConfigs
             world.AddComponent(damage, new ContactDamageComponent(damage: 1));
         }
 
-        /// <summary>
-        /// Marker component for the platform demo player
-        /// </summary>
-        private struct PlatformDemoPlayerComponent { }
-
-        /// <summary>
-        /// Custom input system for platform demo
-        /// </summary>
-        private class PlatformDemoInputSystem
-        {
-            private KeyboardState _previousKeyboardState;
-            private PlatformerPhysicsSystem _physicsSystem;
-
-            public PlatformDemoInputSystem(PlatformerPhysicsSystem physicsSystem)
-            {
-                _physicsSystem = physicsSystem;
-            }
-
-            public void Update(World world, float deltaTime)
-            {
-                var keyboardState = Keyboard.GetState();
-
-                foreach (var entity in world.Query<PlatformDemoPlayerComponent, VelocityComponent>())
-                {
-                    if (!world.TryGetComponent<VelocityComponent>(entity, out var velocity))
-                        continue;
-
-                    if (world.TryGetComponent<StatsComponent>(entity, out var stats) && stats.IsDead)
-                    {
-                        velocity.Value = Vector2.Zero;
-                        world.AddComponent(entity, velocity);
-                        continue;
-                    }
-
-                    // Horizontal movement
-                    velocity.Value.X = 0;
-                    if (keyboardState.IsKeyDown(Keys.Left) || keyboardState.IsKeyDown(Keys.A))
-                        velocity.Value.X = -140f;
-                if (keyboardState.IsKeyDown(Keys.Right) || keyboardState.IsKeyDown(Keys.D))
-                        velocity.Value.X = 140f;
-
-                    world.AddComponent(entity, velocity);
-
-                    // Jump
-                    if ((keyboardState.IsKeyDown(Keys.Space) || keyboardState.IsKeyDown(Keys.W) ||
-                         keyboardState.IsKeyDown(Keys.Up)) && !_previousKeyboardState.IsKeyDown(Keys.Space) &&
-                        !_previousKeyboardState.IsKeyDown(Keys.W) && !_previousKeyboardState.IsKeyDown(Keys.Up))
-                    {
-                        _physicsSystem.Jump(world, entity);
-                    }
-
-                    // Release jump for variable height
-                    if ((_previousKeyboardState.IsKeyDown(Keys.Space) && keyboardState.IsKeyUp(Keys.Space)) ||
-                        (_previousKeyboardState.IsKeyDown(Keys.W) && keyboardState.IsKeyUp(Keys.W)) ||
-                        (_previousKeyboardState.IsKeyDown(Keys.Up) && keyboardState.IsKeyUp(Keys.Up)))
-                    {
-                        _physicsSystem.ReleaseJump(world, entity);
-                    }
-                }
-
-                _previousKeyboardState = keyboardState;
-            }
-        }
+        // PlatformDemoInputSystem and PlatformDemoPlayerComponent moved to Mechanics/Platformer for reuse.
     }
 }

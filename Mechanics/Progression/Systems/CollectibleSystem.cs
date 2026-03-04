@@ -70,6 +70,21 @@ namespace ECS_Base.Mechanics.Progression.Systems
                     world.AddComponent(player, currency);
                 }
 
+                if (world.TryGetComponent<AmmoComponent>(player, out var ammo))
+                {
+                    switch (collectible.Type)
+                    {
+                        case CollectibleType.Arrow:
+                            ammo.Arrows += collectible.Amount;
+                            world.AddComponent(player, ammo);
+                            break;
+                        case CollectibleType.Bomb:
+                            ammo.Bombs += collectible.Amount;
+                            world.AddComponent(player, ammo);
+                            break;
+                    }
+                }
+
                 toRemove.Add(entity);
             }
 

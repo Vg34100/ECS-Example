@@ -12,6 +12,7 @@ namespace ECS_Base.Mechanics.Level.Systems
     {
         private List<LevelData.Level> _loadedLevels = new List<LevelData.Level>();
         private bool _levelsLoaded = false;
+        public string ProjectName { get; set; } = "test-tiles";
 
         public void LoadAllLevels(World world, string basePath, GraphicsDevice graphicsDevice)
         {
@@ -31,14 +32,23 @@ namespace ECS_Base.Mechanics.Level.Systems
 
             try
             {
-                _loadedLevels = LevelData.Level.LoadLevelsFromDirectory(basePath, graphicsDevice);
+                _loadedLevels = LevelData.Level.LoadLevelsFromDirectory(basePath, graphicsDevice, ProjectName);
                 System.IO.File.AppendAllText(debugPath, $"Loaded {_loadedLevels.Count} levels from disk\n");
+
+                HashSet<string> allowedIds = null;
+                foreach (var entity in world.Query<LevelSelectionConfigComponent>())
+                {
+                    var selection = world.GetComponent<LevelSelectionConfigComponent>(entity);
+                    allowedIds = selection.AllowedIdentifiers;
+                    break;
+                }
 
                 // Create entities for each level
                 foreach (var level in _loadedLevels)
                 {
                     var levelEntity = world.CreateEntity();
-                    world.AddComponent(levelEntity, new LevelComponent(level, true));
+                    bool isActive = allowedIds == null || allowedIds.Contains(level.Identifier);
+                    world.AddComponent(levelEntity, new LevelComponent(level, isActive));
                     Console.WriteLine($"Created level entity for: {level.Identifier} at ({level.X}, {level.Y})");
                     System.IO.File.AppendAllText(debugPath, $"Created level entity for: {level.Identifier} at ({level.X}, {level.Y})\n");
                 }

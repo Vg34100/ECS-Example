@@ -21,6 +21,8 @@ namespace ECS_Base.Mechanics.Progression.Components
     {
         Coin,
         Star,
-        Rupee
+        Rupee,
+        Arrow,
+        Bomb
     }
 }

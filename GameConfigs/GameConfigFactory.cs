@@ -26,6 +26,8 @@ namespace ECS_Base.GameConfigs
                 "audio" => new AudioDemoSimple(),
                 "tests" => new SystemTestsDemo(),
                 "platform" => new PlatformDemo(),
+                "platformer-prog" => new PlatformerProgrammaticConfig(),
+                "topdown-prog" => new TopDownProgrammaticConfig(),
                 null => new SimplePlatformerTest(), // Default to simple test
                 _ => new SimplePlatformerTest() // Default to simple test for unknown configs
             };

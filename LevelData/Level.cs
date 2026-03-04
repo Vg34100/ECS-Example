@@ -57,6 +57,8 @@ namespace ECS_Base.LevelData
         public List<LevelEntity> Players { get; set; } = new List<LevelEntity>();
         public List<LevelEntity> Enemies { get; set; } = new List<LevelEntity>();
         public List<PathEntity> Paths { get; set; } = new List<PathEntity>();
+        public List<LevelEntity> Pickups { get; set; } = new List<LevelEntity>();
+        public List<LevelEntity> Hazards { get; set; } = new List<LevelEntity>();
 
         // Tile data
         public int[,] TileData { get; set; }
@@ -67,10 +69,10 @@ namespace ECS_Base.LevelData
             PropertyNameCaseInsensitive = true
         };
 
-        public static List<Level> LoadLevelsFromDirectory(string basePath, GraphicsDevice graphicsDevice)
+        public static List<Level> LoadLevelsFromDirectory(string basePath, GraphicsDevice graphicsDevice, string projectName = "test-tiles")
         {
             var levels = new List<Level>();
-            string simplifiedPath = Path.Combine(basePath, "Levels", "test-tiles", "simplified");
+            string simplifiedPath = Path.Combine(basePath, "Levels", projectName, "simplified");
 
             Debug.WriteLine(simplifiedPath);
 
@@ -283,6 +285,22 @@ namespace ECS_Base.LevelData
                 foreach (var path in paths.EnumerateArray())
                 {
                     level.Paths.Add(ParsePathEntity(path));
+                }
+            }
+
+            if (entities.TryGetProperty("Pickup", out var pickups))
+            {
+                foreach (var pickup in pickups.EnumerateArray())
+                {
+                    level.Pickups.Add(ParseLevelEntity(pickup));
+                }
+            }
+
+            if (entities.TryGetProperty("Hazard", out var hazards))
+            {
+                foreach (var hazard in hazards.EnumerateArray())
+                {
+                    level.Hazards.Add(ParseLevelEntity(hazard));
                 }
             }
         }
