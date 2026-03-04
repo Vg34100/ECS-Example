@@ -1,6 +1,7 @@
 using ECS_Base.Mechanics.Core;
 using ECS_Base.Mechanics.Combat.Components;
 using ECS_Base.Mechanics.Movement.Components;
+using ECS_Base.Mechanics.Collision.Components;
 using ECS_Base.Mechanics.Stats.Components;
 using ECS_Base.Mechanics.Stats.Systems;
 using Microsoft.Xna.Framework;
@@ -64,7 +65,7 @@ namespace ECS_Base.Mechanics.Combat.Systems
             // Remove finished attacks
             foreach (var entity in attacksToRemove)
             {
-                world.RemoveComponent<MeleeAttackComponent>(entity);
+                world.RemoveEntity(entity);
             }
         }
 
@@ -81,6 +82,15 @@ namespace ECS_Base.Mechanics.Combat.Systems
 
             if (!world.TryGetComponent<PositionComponent>(attacker, out var position))
                 return default;
+
+            var attackerCenter = position.Value;
+            if (world.TryGetComponent<ColliderComponent>(attacker, out var collider))
+            {
+                attackerCenter += new Vector2(
+                    collider.Bounds.Width * 0.5f,
+                    collider.Bounds.Height * 0.5f
+                );
+            }
 
             // Reset weapon cooldown
             weapon.TimeSinceLastAttack = 0f;
@@ -102,7 +112,18 @@ namespace ECS_Base.Mechanics.Combat.Systems
             world.AddComponent(attackEntity, attack);
 
             // Position attack at attacker's position
-            world.AddComponent(attackEntity, new PositionComponent { Value = position.Value });
+            var attackPos = attackerCenter + (direction * (weapon.Range * 0.5f));
+            world.AddComponent(attackEntity, new PositionComponent { Value = attackPos });
+
+            // Visual swing box (rotated)
+            Vector2 size = new Microsoft.Xna.Framework.Vector2(weapon.Range, weapon.Range * 0.4f);
+            float rotation = (float)System.Math.Atan2(direction.Y, direction.X) + MathHelper.PiOver2;
+            world.AddComponent(attackEntity, new Rendering.Components.RotatedRectComponent(
+                center: attackPos,
+                size: size,
+                rotation: rotation,
+                color: new Microsoft.Xna.Framework.Color(255, 255, 255, 90)
+            ));
 
             return attackEntity;
         }
@@ -126,22 +147,23 @@ namespace ECS_Base.Mechanics.Combat.Systems
                 if (!world.TryGetComponent<PositionComponent>(targetEntity, out var targetPos))
                     continue;
 
-                // Check if target is in range
                 Vector2 toTarget = targetPos.Value - attackPosition;
-                float distance = toTarget.Length();
+                Vector2 forward = attack.Direction;
+                if (forward.LengthSquared() > 0f)
+                    forward.Normalize();
+                else
+                    forward = new Vector2(1, 0);
 
-                if (distance > attack.Range)
+                Vector2 right = new Vector2(-forward.Y, forward.X);
+
+                float localX = Vector2.Dot(toTarget, right);
+                float localY = Vector2.Dot(toTarget, forward);
+
+                float halfX = attack.Range * 0.5f;
+                float halfY = attack.Range * 0.2f;
+
+                if (Math.Abs(localX) > halfX || Math.Abs(localY) > halfY)
                     continue;
-
-                // Check if target is in attack arc
-                if (toTarget.LengthSquared() > 0)
-                {
-                    toTarget.Normalize();
-                    float angle = (float)Math.Acos(Vector2.Dot(attack.Direction, toTarget));
-
-                    if (angle > attack.Arc / 2f)
-                        continue;
-                }
 
                 // Hit!
                 attack.AlreadyHit.Add(targetEntity.Id);

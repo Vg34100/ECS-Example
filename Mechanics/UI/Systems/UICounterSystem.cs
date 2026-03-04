@@ -20,7 +20,7 @@ namespace ECS_Base.Mechanics.UI.Systems
                 if (!world.TryGetComponent<UITextComponent>(entity, out var text))
                     continue;
 
-                if (!TryGetCurrency(world, counter.TargetEntityId, out var currency))
+                if (!TryGetCurrency(world, counter.TargetEntityId, out var currency, out var target))
                     continue;
 
                 int value = counter.Type switch
@@ -32,15 +32,23 @@ namespace ECS_Base.Mechanics.UI.Systems
                     _ => 0
                 };
 
+                if (counter.Type == CounterType.Arrows || counter.Type == CounterType.Bombs)
+                {
+                    if (world.TryGetComponent(target, out ECS_Base.Mechanics.Progression.Components.AmmoComponent ammo))
+                    {
+                        value = counter.Type == CounterType.Arrows ? ammo.Arrows : ammo.Bombs;
+                    }
+                }
+
                 text.Text = $"{counter.Prefix}{value}";
                 world.AddComponent(entity, text);
             }
         }
 
-        private bool TryGetCurrency(World world, int entityId, out CurrencyComponent currency)
+        private bool TryGetCurrency(World world, int entityId, out CurrencyComponent currency, out Entity target)
         {
             currency = default;
-            var target = world.GetEntities().FirstOrDefault(e => e.Id == entityId);
+            target = world.GetEntities().FirstOrDefault(e => e.Id == entityId);
             if (target == null)
                 return false;
 

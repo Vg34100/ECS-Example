@@ -11,13 +11,15 @@ namespace ECS_Base.Mechanics.UI.Components
         public UIIconType Type;
         public Color Color;
         public int PixelSize;
+        public float Rotation;
 
-        public UIIconComponent(Vector2 position, UIIconType type, Color color, int pixelSize = 2)
+        public UIIconComponent(Vector2 position, UIIconType type, Color color, int pixelSize = 2, float rotation = 0f)
         {
             Position = position;
             Type = type;
             Color = color;
             PixelSize = pixelSize;
+            Rotation = rotation;
         }
     }
 
@@ -27,6 +29,7 @@ namespace ECS_Base.Mechanics.UI.Components
         Star,
         Rupee,
         Arrow,
-        Mushroom
+        Mushroom,
+        Bomb
     }
 }

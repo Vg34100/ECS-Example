@@ -1,7 +1,6 @@
 using ECS_Base.Mechanics.Combat.Components;
 using ECS_Base.Mechanics.Core;
 using ECS_Base.Mechanics.Collision.Components;
-using ECS_Base.Mechanics.Movement.Components;
 using ECS_Base.Mechanics.PlayerController.Components;
 using ECS_Base.Mechanics.Movement.Components;
 using ECS_Base.Mechanics.Stats.Systems;
@@ -16,7 +15,7 @@ namespace ECS_Base.Mechanics.Combat.Systems
     public class ContactDamageSystem
     {
         private readonly StatsSystem _statsSystem;
-        private const bool DEBUG_LOG = false;
+        private const bool DEBUG_LOG = true;
 
         public ContactDamageSystem(StatsSystem statsSystem = null)
         {
@@ -75,7 +74,7 @@ namespace ECS_Base.Mechanics.Combat.Systems
                 // Stomp check (player falling onto enemy)
                 if (world.TryGetComponent<VelocityComponent>(player, out var playerVel) &&
                     playerVel.Value.Y > 0 &&
-                    playerBounds.Bottom <= bounds.Top + 4)
+                    playerBounds.Bottom <= bounds.Top + 10)
                 {
                     world.RemoveEntity(entity);
                     playerVel.Value.Y = -180f; // bounce
@@ -109,6 +108,17 @@ namespace ECS_Base.Mechanics.Combat.Systems
                     var knock = toPlayer * 140f;
                     knock.Y = MathHelper.Clamp(knock.Y, -60f, 60f);
                     world.AddComponent(player, new KnockbackComponent(knock, decay: 10f));
+                }
+
+                // Back off enemy a bit after hit
+                if (world.TryGetComponent<VelocityComponent>(entity, out var enemyVel))
+                {
+                    Vector2 away = pos.Value - playerPos.Value;
+                    if (away.LengthSquared() > 0.01f)
+                    {
+                        away.Normalize();
+                        world.AddComponent(entity, new KnockbackComponent(away * 120f, decay: 8f));
+                    }
                 }
             }
         }

@@ -77,6 +77,18 @@ namespace ECS_Base.Mechanics.Rendering.Systems
             "01111110"
         };
 
+        private static readonly string[] BombMask =
+        {
+            "00111100",
+            "01111110",
+            "11111111",
+            "11111111",
+            "11111111",
+            "01111110",
+            "00111100",
+            "00011000"
+        };
+
         public WorldIconSystem(SpriteBatch spriteBatch, GraphicsDevice graphicsDevice, CameraSystem cameraSystem)
         {
             _spriteBatch = spriteBatch;
@@ -102,17 +114,21 @@ namespace ECS_Base.Mechanics.Rendering.Systems
                     UIIconType.Rupee => RupeeMask,
                     UIIconType.Arrow => ArrowMask,
                     UIIconType.Mushroom => MushroomMask,
+                    UIIconType.Bomb => BombMask,
                     _ => CoinMask
                 };
 
-                DrawMask(position.Value, mask, icon.Color, icon.PixelSize);
+                DrawMask(position.Value, mask, icon.Color, icon.PixelSize, icon.Rotation);
             }
 
             _spriteBatch.End();
         }
 
-        private void DrawMask(Vector2 pos, string[] mask, Color color, int pixelSize)
+        private void DrawMask(Vector2 pos, string[] mask, Color color, int pixelSize, float rotation)
         {
+            float centerX = (mask[0].Length * pixelSize) / 2f;
+            float centerY = (mask.Length * pixelSize) / 2f;
+
             for (int y = 0; y < mask.Length; y++)
             {
                 for (int x = 0; x < mask[y].Length; x++)
@@ -120,11 +136,20 @@ namespace ECS_Base.Mechanics.Rendering.Systems
                     if (mask[y][x] != '1')
                         continue;
 
+                    float localX = (x * pixelSize) - centerX;
+                    float localY = (y * pixelSize) - centerY;
+
+                    float cos = (float)System.Math.Cos(rotation);
+                    float sin = (float)System.Math.Sin(rotation);
+
+                    float rotX = localX * cos - localY * sin;
+                    float rotY = localX * sin + localY * cos;
+
                     _spriteBatch.Draw(
                         _pixel,
                         new Rectangle(
-                            (int)pos.X + x * pixelSize,
-                            (int)pos.Y + y * pixelSize,
+                            (int)(pos.X + centerX + rotX),
+                            (int)(pos.Y + centerY + rotY),
                             pixelSize,
                             pixelSize
                         ),

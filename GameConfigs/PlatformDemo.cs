@@ -19,7 +19,6 @@ using ECS_Base.Mechanics.Progression.Systems;
 using ECS_Base.Mechanics.PlayerController.Components;
 using ECS_Base.Mechanics.Combat.Components;
 using ECS_Base.Mechanics.Combat.Systems;
-using ECS_Base.Mechanics.Rendering.Components;
 using System.Collections.Generic;
 
 namespace ECS_Base.GameConfigs
@@ -265,7 +264,7 @@ namespace ECS_Base.GameConfigs
             SpawnStar(world, new Vector2(600, 180));
 
             // Enemies
-            SpawnGoomba(world, new Vector2(700, 568), 40, 1320);
+            SpawnGoomba(world, new Vector2(700, 568), 0, 0);
 
             // Powerup
             SpawnMushroom(world, new Vector2(460, 552));

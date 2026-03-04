@@ -18,6 +18,7 @@ namespace ECS_Base.Mechanics.UI.Systems
         private readonly UISegmentedBarSystem _segmentedBarSystem;
         private readonly UICounterSystem _counterSystem;
         private readonly UIIconSystem _iconSystem;
+        private readonly UIActionIndicatorSystem _actionIndicatorSystem;
 
         public UISystem(GraphicsDevice graphicsDevice, SpriteBatch spriteBatch, SpriteFont defaultFont)
         {
@@ -31,12 +32,14 @@ namespace ECS_Base.Mechanics.UI.Systems
             _segmentedBarSystem = new UISegmentedBarSystem(graphicsDevice);
             _counterSystem = new UICounterSystem();
             _iconSystem = new UIIconSystem(graphicsDevice);
+            _actionIndicatorSystem = new UIActionIndicatorSystem();
         }
 
         public void Update(World world)
         {
             _buttonSystem.Update(world);
             _counterSystem.Update(world);
+            _actionIndicatorSystem.Update(world);
         }
 
         public void Draw(World world)

@@ -38,10 +38,21 @@ namespace ECS_Base.GameConfigs
             systemManager.AddSystem(new InputSystem());
             systemManager.AddSystem(new TopDownMovementSystem()); // Top-down instead of platformer
             systemManager.AddSystem(new EnemyAISystem());
+            var statsSystem = new StatsSystem();
+            systemManager.AddSystem(statsSystem);
+            var meleeSystem = new MeleeCombatSystem(statsSystem);
+            systemManager.AddSystem(new SwordSystem(meleeSystem));
+            systemManager.AddSystem(meleeSystem);
+            systemManager.AddSystem(new ShieldSystem());
+            systemManager.AddSystem(new ShieldVisualSystem());
+            systemManager.AddSystem(new BowVisualSystem());
+            systemManager.AddSystem(new BombSystem(statsSystem));
             systemManager.AddSystem(new ProjectileSystem());
             systemManager.AddSystem(new KnockbackSystem());
             systemManager.AddSystem(new MovementSystem());
             systemManager.AddSystem(new FloatingSystem());
+            systemManager.AddSystem(new ExplosionSystem());
+            systemManager.AddSystem(new FacingIndicatorSystem());
 
             // Collision systems
             var collisionSystem = new CollisionSystem();
@@ -49,8 +60,6 @@ namespace ECS_Base.GameConfigs
             game.CollisionSystem = collisionSystem;
             systemManager.AddSystem(new SweptCollisionSystem()); // For projectiles
 
-            var statsSystem = new StatsSystem();
-            systemManager.AddSystem(statsSystem);
             systemManager.AddSystem(new InvulnerabilitySystem());
             systemManager.AddSystem(new RespawnSystem());
             systemManager.AddSystem(new DamageFlashSystem());
@@ -106,6 +115,14 @@ namespace ECS_Base.GameConfigs
             world.AddComponent(player, new DamageFlashOnHitComponent(flashColor: Color.White, duration: 0.35f));
             world.AddComponent(player, new RespawnComponent(new Vector2(350, 250), delay: 2.0f));
             world.AddComponent(player, new CurrencyComponent());
+            world.AddComponent(player, new AmmoComponent(arrows: 20, bombs: 3));
+            world.AddComponent(player, new MeleeWeaponComponent(damage: 2f, range: 36f, attackSpeed: 0.4f));
+            if (world.TryGetComponent<MeleeWeaponComponent>(player, out var sword))
+            {
+                sword.Knockback = 120f;
+                world.AddComponent(player, sword);
+            }
+            world.AddComponent(player, new ShieldComponent(damageMultiplier: 0f));
             world.AddComponent(player, new CameraTargetComponent { IsActive = true });
 
             // UI: hearts (3 hearts with half-health units)
@@ -122,6 +139,47 @@ namespace ECS_Base.GameConfigs
             world.AddComponent(rupeesText, new UITextComponent(null, "Rupees: 0", new Vector2(16, 36)));
             world.AddComponent(rupeesText, new UICounterComponent(player.Id, CounterType.Rupees, "Rupees: "));
             world.AddComponent(rupeesText, new UIIconComponent(new Vector2(16, 36), UIIconType.Rupee, Color.LawnGreen, 2));
+
+            var arrowsText = world.CreateEntity();
+            world.AddComponent(arrowsText, new UITextComponent(null, "0", new Vector2(36, 56)));
+            world.AddComponent(arrowsText, new UICounterComponent(player.Id, CounterType.Arrows, ""));
+            world.AddComponent(arrowsText, new UIIconComponent(new Vector2(16, 56), UIIconType.Arrow, Color.White, 2));
+
+            var bombsText = world.CreateEntity();
+            world.AddComponent(bombsText, new UITextComponent(null, "0", new Vector2(36, 72)));
+            world.AddComponent(bombsText, new UICounterComponent(player.Id, CounterType.Bombs, ""));
+            world.AddComponent(bombsText, new UIIconComponent(new Vector2(16, 72), UIIconType.Bomb, Color.Black, 2));
+
+            // Action indicators
+            var swordIcon = world.CreateEntity();
+            world.AddComponent(swordIcon, new UIIconComponent(new Vector2(200, 16), UIIconType.Star, Color.White, 2));
+            world.AddComponent(swordIcon, new UIActionIndicatorComponent(player.Id, ActionType.Sword, Color.White, new Color(80, 80, 80)));
+
+            var shieldIcon = world.CreateEntity();
+            world.AddComponent(shieldIcon, new UIIconComponent(new Vector2(220, 16), UIIconType.Star, Color.White, 2));
+            world.AddComponent(shieldIcon, new UIActionIndicatorComponent(player.Id, ActionType.Shield, Color.Cyan, new Color(80, 80, 80)));
+
+            var bowIcon = world.CreateEntity();
+            world.AddComponent(bowIcon, new UIIconComponent(new Vector2(240, 16), UIIconType.Arrow, Color.White, 2));
+            world.AddComponent(bowIcon, new UIActionIndicatorComponent(player.Id, ActionType.Bow, Color.Yellow, new Color(80, 80, 80)));
+
+            // Facing indicator (world)
+            var facing = world.CreateEntity();
+            world.AddComponent(facing, new PositionComponent(0, 0));
+            world.AddComponent(facing, new WorldIconComponent(UIIconType.Arrow, Color.White, 1));
+            world.AddComponent(facing, new FacingIndicatorComponent(player.Id, distance: 16f, offset: Vector2.Zero));
+
+            // Shield visual (world)
+            var shield = world.CreateEntity();
+            world.AddComponent(shield, new PositionComponent(0, 0));
+            world.AddComponent(shield, new ShapeComponent(ShapeComponent.ShapeType.Rectangle, Color.Transparent, new Vector2(28, 8)));
+            world.AddComponent(shield, new ShieldVisualComponent(player.Id, new Vector2(28, 8), distance: 12f, color: new Color(120, 200, 255, 160)));
+
+            // Bow visual (world)
+            var bow = world.CreateEntity();
+            world.AddComponent(bow, new PositionComponent(0, 0));
+            world.AddComponent(bow, new ShapeComponent(ShapeComponent.ShapeType.Rectangle, Color.Transparent, new Vector2(12, 4)));
+            world.AddComponent(bow, new BowVisualComponent(player.Id, new Vector2(12, 4), distance: 10f, timeRemaining: 0f, color: new Color(255, 220, 120, 180)));
 
             // Spawn melee enemies (chase only)
             SpawnEnemy(world, 200, 150, canShoot: false);
@@ -165,13 +223,13 @@ namespace ECS_Base.GameConfigs
             world.AddComponent(enemy, new PositionComponent(x, y));
             world.AddComponent(enemy, new VelocityComponent());
             world.AddComponent(enemy, new EnemyComponent(
-                chaseSpeed: canShoot ? 40f : 60f, // Shooters move slower
+                chaseSpeed: canShoot ? 30f : 45f, // Shooters move slower
                 chaseRange: 300f,
-                stopDistance: canShoot ? 120f : 30f, // Shooters keep distance
+                stopDistance: canShoot ? 90f : 20f, // Shooters keep distance
                 separationRadius: 25f,
                 canShoot: canShoot,
                 shootRange: 180f,
-                shootCooldown: 2.0f
+                shootCooldown: 3.0f
             ));
             world.AddComponent(enemy, new ColliderComponent(
                 new Rectangle(0, 0, 14, 14),

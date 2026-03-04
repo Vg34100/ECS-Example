@@ -200,6 +200,14 @@ namespace ECS_Base.Mechanics.Stats.Systems
             if (!world.TryGetComponent<ShapeComponent>(target, out var shape))
                 return;
 
+            if (world.TryGetComponent<DamageFlashComponent>(target, out var existing))
+            {
+                existing.TimeRemaining = onHit.Duration;
+                existing.FlashColor = onHit.FlashColor;
+                world.AddComponent(target, existing);
+                return;
+            }
+
             world.AddComponent(target, new DamageFlashComponent(
                 originalColor: shape.Color,
                 flashColor: onHit.FlashColor,

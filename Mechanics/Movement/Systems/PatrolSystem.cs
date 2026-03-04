@@ -21,10 +21,13 @@ namespace ECS_Base.Mechanics.Movement.Systems
                 var position = world.GetComponent<PositionComponent>(entity);
                 var velocity = world.GetComponent<VelocityComponent>(entity);
 
-                if (position.Value.X <= patrol.MinX)
-                    patrol.Direction = 1;
-                else if (position.Value.X >= patrol.MaxX)
-                    patrol.Direction = -1;
+                if (patrol.MinX < patrol.MaxX)
+                {
+                    if (position.Value.X <= patrol.MinX)
+                        patrol.Direction = 1;
+                    else if (position.Value.X >= patrol.MaxX)
+                        patrol.Direction = -1;
+                }
 
                 if (world.TryGetComponent<GroundedComponent>(entity, out var grounded))
                 {

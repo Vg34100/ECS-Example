@@ -1,7 +1,6 @@
 using ECS_Base.Mechanics.Core;
 using ECS_Base.Mechanics.Combat.Components;
 using ECS_Base.Mechanics.Collision.Components;
-using ECS_Base.Mechanics.Movement.Components;
 using ECS_Base.Mechanics.PlayerController.Components;
 using ECS_Base.Mechanics.Stats.Components;
 using ECS_Base.Mechanics.Stats.Systems;
@@ -103,6 +102,17 @@ namespace ECS_Base.Mechanics.Combat.Systems
 
                         if (projBounds.Intersects(playerBounds))
                         {
+                            // Reflect if blocking
+                            if (world.TryGetComponent<BlockingComponent>(playerEntity, out var blocking) && blocking.IsBlocking &&
+                                world.TryGetComponent<VelocityComponent>(projectileEntity, out var projVel))
+                            {
+                                projVel.Value *= -1f;
+                                world.AddComponent(projectileEntity, projVel);
+                                projectile.Owner = ProjectileComponent.ProjectileOwner.Player;
+                                world.AddComponent(projectileEntity, projectile);
+                                continue;
+                            }
+
                             // Deal damage
                             ApplyDamage(world, playerEntity, projectile.Damage);
 

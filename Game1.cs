@@ -10,7 +10,6 @@ using ECS_Base.Mechanics.Rendering.Systems;
 using ECS_Base.Mechanics.UI.Systems;
 using ECS_Base.GameConfigs;
 using System.Linq;
-using Microsoft.Xna.Framework.Input;
 
 namespace ECS_Base
 {
@@ -89,6 +88,7 @@ namespace ECS_Base
                 _systemManager.AddSystem(renderSystem);
                 _systemManager.AddSystem(new LevelRenderSystem(_spriteBatch, CameraSystem));
                 _systemManager.AddSystem(new WorldIconSystem(_spriteBatch, GraphicsDevice, CameraSystem));
+                _systemManager.AddSystem(new RotatedRectSystem(_spriteBatch, GraphicsDevice, CameraSystem));
 
                 // UI should render after world systems
                 _uiSystem = new UISystem(GraphicsDevice, _spriteBatch, _font);

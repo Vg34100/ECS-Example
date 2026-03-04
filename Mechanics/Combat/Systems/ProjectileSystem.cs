@@ -29,10 +29,24 @@ namespace ECS_Base.Mechanics.Combat.Systems
                     !world.TryGetComponent<PositionComponent>(entity, out var position))
                     continue;
 
-                // Shoot projectile (using JumpHeld as shoot button for now)
-                if (input.JumpHeld && _shootCooldown <= 0f)
+                // Shoot projectile
+                if (input.ShootHeld && _shootCooldown <= 0f)
                 {
-                    SpawnProjectile(world, position.Value, input.Movement);
+                    if (world.TryGetComponent<ECS_Base.Mechanics.Progression.Components.AmmoComponent>(entity, out var ammo))
+                    {
+                        if (ammo.Arrows <= 0)
+                            continue;
+
+                        ammo.Arrows -= 1;
+                        world.AddComponent(entity, ammo);
+                    }
+
+                    Vector2 shootDir = input.Movement;
+                    if (shootDir.LengthSquared() < 0.01f && world.TryGetComponent<ECS_Base.Mechanics.Movement.Components.FacingComponent>(entity, out var facing))
+                    {
+                        shootDir = facing.Direction;
+                    }
+                    SpawnProjectile(world, position.Value, shootDir);
                     _shootCooldown = SHOOT_DELAY;
                 }
             }

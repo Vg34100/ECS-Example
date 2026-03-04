@@ -22,6 +22,8 @@ namespace ECS_Base.Mechanics.UI.Components
         Coins,
         Stars,
         Rupees,
-        Score
+        Score,
+        Arrows,
+        Bombs
     }
 }

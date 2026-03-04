@@ -35,6 +35,15 @@ namespace ECS_Base.Mechanics.Movement.Systems
                 if (movementDirection.LengthSquared() > 0)
                 {
                     movementDirection.Normalize();
+                    if (world.TryGetComponent<FacingComponent>(entity, out var facing))
+                    {
+                        facing.Direction = movementDirection;
+                        world.AddComponent(entity, facing);
+                    }
+                    else
+                    {
+                        world.AddComponent(entity, new FacingComponent(movementDirection));
+                    }
                 }
 
                 velocity.Value = movementDirection * movement.MoveSpeed;
