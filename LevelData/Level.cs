@@ -309,18 +309,18 @@ namespace ECS_Base.LevelData
         {
             var entity = new LevelEntity
             {
-                Id = entityElement.GetProperty("id").GetString(),
-                Iid = entityElement.GetProperty("iid").GetString(),
-                Layer = entityElement.GetProperty("layer").GetString(),
-                X = entityElement.GetProperty("x").GetInt32(),
-                Y = entityElement.GetProperty("y").GetInt32(),
-                Width = entityElement.GetProperty("width").GetInt32(),
-                Height = entityElement.GetProperty("height").GetInt32(),
-                Color = entityElement.GetProperty("color").GetInt32()
+                Id = GetString(entityElement, "id", "Id"),
+                Iid = GetString(entityElement, "iid", "Iid"),
+                Layer = GetString(entityElement, "layer", "Layer"),
+                X = GetInt(entityElement, "x", "X"),
+                Y = GetInt(entityElement, "y", "Y"),
+                Width = GetInt(entityElement, "width", "Width"),
+                Height = GetInt(entityElement, "height", "Height"),
+                Color = GetInt(entityElement, "color", "Color")
             };
 
             // Parse custom fields if they exist
-            if (entityElement.TryGetProperty("customFields", out var customFields))
+            if (TryGetPropertyCaseInsensitive(entityElement, "customFields", "CustomFields", out var customFields))
             {
                 foreach (var field in customFields.EnumerateObject())
                 {
@@ -335,25 +335,25 @@ namespace ECS_Base.LevelData
         {
             var pathEntity = new PathEntity
             {
-                Id = pathElement.GetProperty("id").GetString(),
-                Iid = pathElement.GetProperty("iid").GetString(),
-                Layer = pathElement.GetProperty("layer").GetString(),
-                X = pathElement.GetProperty("x").GetInt32(),
-                Y = pathElement.GetProperty("y").GetInt32(),
-                Width = pathElement.GetProperty("width").GetInt32(),
-                Height = pathElement.GetProperty("height").GetInt32(),
-                Color = pathElement.GetProperty("color").GetInt32()
+                Id = GetString(pathElement, "id", "Id"),
+                Iid = GetString(pathElement, "iid", "Iid"),
+                Layer = GetString(pathElement, "layer", "Layer"),
+                X = GetInt(pathElement, "x", "X"),
+                Y = GetInt(pathElement, "y", "Y"),
+                Width = GetInt(pathElement, "width", "Width"),
+                Height = GetInt(pathElement, "height", "Height"),
+                Color = GetInt(pathElement, "color", "Color")
             };
 
             // Parse nextDoor custom field
-            if (pathElement.TryGetProperty("customFields", out var customFields) &&
-                customFields.TryGetProperty("nextDoor", out var nextDoor))
+            if (TryGetPropertyCaseInsensitive(pathElement, "customFields", "CustomFields", out var customFields) &&
+                TryGetPropertyCaseInsensitive(customFields, "nextDoor", "NextDoor", out var nextDoor))
             {
-                if (nextDoor.TryGetProperty("entityIid", out var entityIid))
+                if (TryGetPropertyCaseInsensitive(nextDoor, "entityIid", "EntityIid", out var entityIid))
                 {
                     pathEntity.NextDoorEntityIid = entityIid.GetString();
                 }
-                if (nextDoor.TryGetProperty("levelIid", out var levelIid))
+                if (TryGetPropertyCaseInsensitive(nextDoor, "levelIid", "LevelIid", out var levelIid))
                 {
                     pathEntity.NextDoorLevelIid = levelIid.GetString();
                 }
@@ -456,6 +456,30 @@ namespace ECS_Base.LevelData
                 Debug.WriteLine($"    - {path.Id} at ({path.X}, {path.Y}) -> Level: {path.NextDoorLevelIid}, Entity: {path.NextDoorEntityIid}");
             }
             Debug.WriteLine("");
+        }
+
+        private static bool TryGetPropertyCaseInsensitive(JsonElement element, string camelCase, string pascalCase, out JsonElement value)
+        {
+            if (element.TryGetProperty(camelCase, out value))
+                return true;
+            if (element.TryGetProperty(pascalCase, out value))
+                return true;
+            value = default;
+            return false;
+        }
+
+        private static string GetString(JsonElement element, string camelCase, string pascalCase)
+        {
+            if (TryGetPropertyCaseInsensitive(element, camelCase, pascalCase, out var value))
+                return value.GetString();
+            return string.Empty;
+        }
+
+        private static int GetInt(JsonElement element, string camelCase, string pascalCase)
+        {
+            if (TryGetPropertyCaseInsensitive(element, camelCase, pascalCase, out var value))
+                return value.GetInt32();
+            return 0;
         }
     }
 }

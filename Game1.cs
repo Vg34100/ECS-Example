@@ -8,6 +8,7 @@ using ECS_Base.Mechanics.Level.Systems;
 using ECS_Base.Mechanics.Collision.Systems;
 using ECS_Base.Mechanics.Rendering.Systems;
 using ECS_Base.Mechanics.UI.Systems;
+using ECS_Base.Mechanics.Editor.Systems;
 using ECS_Base.GameConfigs;
 using System.Linq;
 
@@ -23,6 +24,7 @@ namespace ECS_Base
         private IGameConfig _config;
         private UISystem _uiSystem;
         private int _previousMouseWheel;
+        private bool _restartRequested;
 
         // Public properties for systems that configs might need to set
         public CameraSystem CameraSystem { get; set; }
@@ -51,6 +53,12 @@ namespace ECS_Base
                 _world.RemoveEntity(entity);
             }
             Initialize();
+            LoadContent();
+        }
+
+        public void RequestRestart()
+        {
+            _restartRequested = true;
         }
 
         protected override void Initialize()
@@ -88,6 +96,7 @@ namespace ECS_Base
                 _systemManager.AddSystem(new LevelRenderSystem(_spriteBatch, CameraSystem));
                 var renderSystem = new RenderSystem(_spriteBatch, GraphicsDevice, CameraSystem);
                 _systemManager.AddSystem(renderSystem);
+                _systemManager.AddSystem(new EditorOverlaySystem(GraphicsDevice, _spriteBatch, _font));
                 _systemManager.AddSystem(new WorldIconSystem(_spriteBatch, GraphicsDevice, CameraSystem));
                 _systemManager.AddSystem(new RotatedRectSystem(_spriteBatch, GraphicsDevice, CameraSystem));
 
@@ -140,6 +149,13 @@ namespace ECS_Base
 
         protected override void Update(GameTime gameTime)
         {
+            if (_restartRequested)
+            {
+                _restartRequested = false;
+                Restart();
+                return;
+            }
+
             // Handle global input
             if (GamePad.GetState(PlayerIndex.One).Buttons.Start == ButtonState.Pressed ||
                 Keyboard.GetState().IsKeyDown(Keys.Escape))

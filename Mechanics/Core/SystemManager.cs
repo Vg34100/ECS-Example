@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using ECS_Base.Mechanics.Editor.Components;
 
 namespace ECS_Base.Mechanics.Core
 {
@@ -35,8 +36,19 @@ namespace ECS_Base.Mechanics.Core
 
         public void Update(World world, float deltaTime)
         {
+            bool isEditing = false;
+            foreach (var entity in world.Query<EditorStateComponent>())
+            {
+                var state = world.GetComponent<EditorStateComponent>(entity);
+                isEditing = state.IsEditing;
+                break;
+            }
+
             foreach (var (system, updateMethod) in _updateSystems)
             {
+                if (isEditing && !(system is IEditorSystem) && !(system is IAlwaysUpdateSystem))
+                    continue;
+
                 var parameters = updateMethod.GetParameters();
 
                 try

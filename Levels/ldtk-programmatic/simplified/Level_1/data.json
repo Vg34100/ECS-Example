@@ -7,124 +7,126 @@
   "height": 1024,
   "bgColor": "#6A7A6A",
   "neighbourLevels": [],
-  "customFields": {},
+  "customFields": {
+    "RoomType": "None"
+  },
   "layers": [
     "Tiles.png"
   ],
   "entities": {
     "Player": [
       {
-        "id": "Player",
-        "iid": "player-1",
-        "layer": "Entities",
-        "x": 240,
-        "y": 160,
-        "width": 16,
-        "height": 16,
-        "color": 3128910,
-        "customFields": {}
+        "Id": "Player",
+        "Iid": "player-1",
+        "Layer": "Entities",
+        "X": 240,
+        "Y": 160,
+        "Width": 16,
+        "Height": 16,
+        "Color": 3128910,
+        "CustomFields": {}
       }
     ],
     "Enemy": [
       {
-        "id": "Enemy",
-        "iid": "enemy-1",
-        "layer": "Entities",
-        "x": 320,
-        "y": 320,
-        "width": 16,
-        "height": 16,
-        "color": 14107459,
-        "customFields": {
+        "Id": "Enemy",
+        "Iid": "enemy-1",
+        "Layer": "Entities",
+        "X": 320,
+        "Y": 320,
+        "Width": 16,
+        "Height": 16,
+        "Color": 14107459,
+        "CustomFields": {
           "Kind": "Shooter"
         }
       },
       {
-        "id": "Enemy",
-        "iid": "enemy-2",
-        "layer": "Entities",
-        "x": 400,
-        "y": 240,
-        "width": 16,
-        "height": 16,
-        "color": 14107459,
-        "customFields": {}
+        "Id": "Enemy",
+        "Iid": "enemy-2",
+        "Layer": "Entities",
+        "X": 400,
+        "Y": 240,
+        "Width": 16,
+        "Height": 16,
+        "Color": 14107459,
+        "CustomFields": {}
       },
       {
-        "id": "Enemy",
-        "iid": "enemy-3",
-        "layer": "Entities",
-        "x": 160,
-        "y": 520,
-        "width": 16,
-        "height": 16,
-        "color": 14107459,
-        "customFields": {}
+        "Id": "Enemy",
+        "Iid": "enemy-3",
+        "Layer": "Entities",
+        "X": 160,
+        "Y": 520,
+        "Width": 16,
+        "Height": 16,
+        "Color": 14107459,
+        "CustomFields": {}
       }
     ],
     "Pickup": [
       {
-        "id": "Pickup",
-        "iid": "rupee-1",
-        "layer": "Entities",
-        "x": 200,
-        "y": 200,
-        "width": 16,
-        "height": 16,
-        "color": 0,
-        "customFields": {
+        "Id": "Pickup",
+        "Iid": "rupee-1",
+        "Layer": "Entities",
+        "X": 200,
+        "Y": 200,
+        "Width": 16,
+        "Height": 16,
+        "Color": 0,
+        "CustomFields": {
           "Kind": "Rupee"
         }
       },
       {
-        "id": "Pickup",
-        "iid": "rupee-2",
-        "layer": "Entities",
-        "x": 520,
-        "y": 200,
-        "width": 16,
-        "height": 16,
-        "color": 0,
-        "customFields": {
+        "Id": "Pickup",
+        "Iid": "rupee-2",
+        "Layer": "Entities",
+        "X": 520,
+        "Y": 200,
+        "Width": 16,
+        "Height": 16,
+        "Color": 0,
+        "CustomFields": {
           "Kind": "Rupee"
         }
       },
       {
-        "id": "Pickup",
-        "iid": "heart-1",
-        "layer": "Entities",
-        "x": 360,
-        "y": 180,
-        "width": 16,
-        "height": 16,
-        "color": 0,
-        "customFields": {
+        "Id": "Pickup",
+        "Iid": "heart-1",
+        "Layer": "Entities",
+        "X": 360,
+        "Y": 180,
+        "Width": 16,
+        "Height": 16,
+        "Color": 0,
+        "CustomFields": {
           "Kind": "Heart"
         }
       },
       {
-        "id": "Pickup",
-        "iid": "arrow-1",
-        "layer": "Entities",
-        "x": 256,
-        "y": 384,
-        "width": 16,
-        "height": 16,
-        "color": 0,
-        "customFields": {
+        "Id": "Pickup",
+        "Iid": "arrow-1",
+        "Layer": "Entities",
+        "X": 256,
+        "Y": 384,
+        "Width": 16,
+        "Height": 16,
+        "Color": 0,
+        "CustomFields": {
           "Kind": "Arrow"
         }
       },
       {
-        "id": "Pickup",
-        "iid": "bomb-1",
-        "layer": "Entities",
-        "x": 448,
-        "y": 384,
-        "width": 16,
-        "height": 16,
-        "color": 0,
-        "customFields": {
+        "Id": "Pickup",
+        "Iid": "bomb-1",
+        "Layer": "Entities",
+        "X": 448,
+        "Y": 384,
+        "Width": 16,
+        "Height": 16,
+        "Color": 0,
+        "CustomFields": {
           "Kind": "Bomb"
         }
       }

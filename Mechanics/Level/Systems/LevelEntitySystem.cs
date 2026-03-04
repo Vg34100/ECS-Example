@@ -8,7 +8,6 @@ using ECS_Base.Mechanics.Camera.Components;
 using ECS_Base.Mechanics.Gravity.Components;
 using ECS_Base.Mechanics.Level.Components;
 using ECS_Base.Mechanics.Stats.Components;
-using ECS_Base.Mechanics.Progression.Components;
 using ECS_Base.Mechanics.Combat.Components;
 using ECS_Base.Mechanics.Platformer.Components;
 using ECS_Base.Mechanics.UI.Components;

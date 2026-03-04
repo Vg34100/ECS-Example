@@ -13,6 +13,8 @@ using ECS_Base.Mechanics.Stats.Systems;
 using ECS_Base.Mechanics.Rendering.Systems;
 using ECS_Base.Mechanics.Progression.Systems;
 using ECS_Base.Mechanics.Rendering.Components;
+using ECS_Base.Mechanics.Editor.Components;
+using ECS_Base.Mechanics.Editor.Systems;
 
 namespace ECS_Base.GameConfigs
 {
@@ -56,6 +58,12 @@ namespace ECS_Base.GameConfigs
             systemManager.AddSystem(new CollectibleSystem());
             systemManager.AddSystem(new ContactDamageSystem(statsSystem));
             systemManager.AddSystem(new LevelEntitySystem());
+            systemManager.AddSystem(new EditorModeSystem());
+            systemManager.AddSystem(new EditorCameraSystem());
+            systemManager.AddSystem(new EditorTilePaintSystem());
+            systemManager.AddSystem(new EditorEntitySystem());
+            systemManager.AddSystem(new EditorSaveSystem());
+            systemManager.AddSystem(new EditorPlaytestSystem(game));
 
             var cameraSystem = new CameraSystem(new Vector2(
                 game.GraphicsDeviceManager.PreferredBackBufferWidth,
@@ -82,6 +90,16 @@ namespace ECS_Base.GameConfigs
             var levelSelect = world.CreateEntity();
             world.AddComponent(levelSelect, new LevelSelectionConfigComponent(
                 new System.Collections.Generic.HashSet<string> { "Level_1" }
+            ));
+
+            var editorState = world.CreateEntity();
+            world.AddComponent(editorState, new EditorStateComponent(
+                isEditing: false,
+                tool: EditorTool.TilePaint,
+                selectedTileValue: 10,
+                entityType: EditorEntityType.Pickup,
+                entityKind: "Rupee",
+                activeLevelId: "Level_1"
             ));
 
             var tilesetConfig = world.CreateEntity();

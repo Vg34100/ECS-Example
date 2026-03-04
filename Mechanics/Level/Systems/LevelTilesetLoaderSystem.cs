@@ -10,7 +10,7 @@ namespace ECS_Base.Mechanics.Level.Systems
     /// <summary>
     /// Loads tileset texture and intgrid mapping from an LDtk project file.
     /// </summary>
-    public class LevelTilesetLoaderSystem
+    public class LevelTilesetLoaderSystem : ECS_Base.Mechanics.Core.IAlwaysUpdateSystem
     {
         private readonly GraphicsDevice _graphicsDevice;
         private bool _loaded;
