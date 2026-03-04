@@ -1,6 +1,7 @@
 using ECS_Base.Mechanics.Core;
 using ECS_Base.Mechanics.Stats.Components;
 using ECS_Base.Mechanics.Movement.Components;
+using ECS_Base.Mechanics.Rendering.Components;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -83,6 +84,12 @@ namespace ECS_Base.Mechanics.Stats.Systems
 
             float actualDamage = stats.TakeDamage(damage);
             world.AddComponent(target, stats);
+
+            if (actualDamage > 0)
+            {
+                ApplyInvulnerability(world, target);
+                ApplyDamageFlash(world, target);
+            }
 
             // Fire damage event
             if (_eventSystem != null && actualDamage > 0)
@@ -167,6 +174,35 @@ namespace ECS_Base.Mechanics.Stats.Systems
             {
                 world.RemoveComponent<StatModifierComponent>(modEntity);
             }
+        }
+
+        private void ApplyInvulnerability(World world, Entity target)
+        {
+            if (!world.TryGetComponent<InvulnerabilityOnHitComponent>(target, out var onHit))
+                return;
+
+            if (world.TryGetComponent<StatsComponent>(target, out var stats))
+            {
+                stats.IsInvulnerable = true;
+                world.AddComponent(target, stats);
+            }
+
+            world.AddComponent(target, new InvulnerabilityComponent(onHit.Duration));
+        }
+
+        private void ApplyDamageFlash(World world, Entity target)
+        {
+            if (!world.TryGetComponent<DamageFlashOnHitComponent>(target, out var onHit))
+                return;
+
+            if (!world.TryGetComponent<ShapeComponent>(target, out var shape))
+                return;
+
+            world.AddComponent(target, new DamageFlashComponent(
+                originalColor: shape.Color,
+                flashColor: onHit.FlashColor,
+                duration: onHit.Duration
+            ));
         }
     }
 }

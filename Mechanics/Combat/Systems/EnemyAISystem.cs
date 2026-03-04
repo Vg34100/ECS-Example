@@ -122,7 +122,7 @@ namespace ECS_Base.Mechanics.Combat.Systems
             world.AddComponent(projectile, new PositionComponent(enemyPosition.X + 8, enemyPosition.Y + 8));
             world.AddComponent(projectile, new VelocityComponent(projectileVelocity.X, projectileVelocity.Y));
             world.AddComponent(projectile, new ProjectileComponent(
-                damage: 10,
+                damage: 1,
                 lifetime: 3.0f,
                 initialVelocity: projectileVelocity,
                 owner: ProjectileComponent.ProjectileOwner.Enemy

@@ -3,6 +3,7 @@ using ECS_Base.Mechanics.Platformer.Components;
 using ECS_Base.Mechanics.Movement.Components;
 using ECS_Base.Mechanics.Collision.Components;
 using Microsoft.Xna.Framework;
+using ECS_Base.Mechanics.Stats.Components;
 
 namespace ECS_Base.Mechanics.Platformer.Systems
 {
@@ -18,6 +19,16 @@ namespace ECS_Base.Mechanics.Platformer.Systems
         {
             foreach (var entity in world.Query<PlatformerPhysicsComponent, VelocityComponent>())
             {
+                if (world.TryGetComponent<StatsComponent>(entity, out var stats) && stats.IsDead)
+                {
+                    if (world.TryGetComponent<VelocityComponent>(entity, out var deadVel))
+                    {
+                        deadVel.Value = Vector2.Zero;
+                        world.AddComponent(entity, deadVel);
+                    }
+                    continue;
+                }
+
                 if (!world.TryGetComponent<PlatformerPhysicsComponent>(entity, out var physics))
                     continue;
 

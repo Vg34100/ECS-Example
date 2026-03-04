@@ -3,6 +3,8 @@ using ECS_Base.Mechanics.Combat.Components;
 using ECS_Base.Mechanics.Collision.Components;
 using ECS_Base.Mechanics.Movement.Components;
 using ECS_Base.Mechanics.PlayerController.Components;
+using ECS_Base.Mechanics.Stats.Components;
+using ECS_Base.Mechanics.Stats.Systems;
 using Microsoft.Xna.Framework;
 using System.Collections.Generic;
 
@@ -13,6 +15,13 @@ namespace ECS_Base.Mechanics.Combat.Systems
     /// </summary>
     public class CombatSystem
     {
+        private readonly StatsSystem _statsSystem;
+
+        public CombatSystem(StatsSystem statsSystem = null)
+        {
+            _statsSystem = statsSystem;
+        }
+
         public void Update(World world, float deltaTime)
         {
             var entitiesToRemove = new List<Entity>();
@@ -38,7 +47,7 @@ namespace ECS_Base.Mechanics.Combat.Systems
                     foreach (var enemyEntity in world.GetEntities())
                     {
                         if (!world.TryGetComponent<EnemyComponent>(enemyEntity, out _) ||
-                            !world.TryGetComponent<HealthComponent>(enemyEntity, out var health) ||
+                            !world.TryGetComponent<StatsComponent>(enemyEntity, out _) ||
                             !world.TryGetComponent<PositionComponent>(enemyEntity, out var enemyPos) ||
                             !world.TryGetComponent<ColliderComponent>(enemyEntity, out var enemyCollider))
                             continue;
@@ -53,14 +62,14 @@ namespace ECS_Base.Mechanics.Combat.Systems
                         if (projBounds.Intersects(enemyBounds))
                         {
                             // Deal damage
-                            health.CurrentHealth -= projectile.Damage;
-                            world.AddComponent(enemyEntity, health);
+                            ApplyDamage(world, enemyEntity, projectile.Damage);
 
                             // Destroy projectile
                             if (!entitiesToRemove.Contains(projectileEntity))
                                 entitiesToRemove.Add(projectileEntity);
 
-                            System.Console.WriteLine($"Hit enemy! Enemy health: {health.CurrentHealth}");
+                            if (world.TryGetComponent<StatsComponent>(enemyEntity, out var updatedStats))
+                                System.Console.WriteLine($"Hit enemy! Enemy health: {updatedStats.Health}");
                             break;
                         }
                     }
@@ -71,7 +80,7 @@ namespace ECS_Base.Mechanics.Combat.Systems
                     foreach (var playerEntity in world.GetEntities())
                     {
                         if (!world.TryGetComponent<PlayerComponent>(playerEntity, out _) ||
-                            !world.TryGetComponent<HealthComponent>(playerEntity, out var health) ||
+                            !world.TryGetComponent<StatsComponent>(playerEntity, out _) ||
                             !world.TryGetComponent<PositionComponent>(playerEntity, out var playerPos) ||
                             !world.TryGetComponent<ColliderComponent>(playerEntity, out var playerCollider))
                             continue;
@@ -86,14 +95,14 @@ namespace ECS_Base.Mechanics.Combat.Systems
                         if (projBounds.Intersects(playerBounds))
                         {
                             // Deal damage
-                            health.CurrentHealth -= projectile.Damage;
-                            world.AddComponent(playerEntity, health);
+                            ApplyDamage(world, playerEntity, projectile.Damage);
 
                             // Destroy projectile
                             if (!entitiesToRemove.Contains(projectileEntity))
                                 entitiesToRemove.Add(projectileEntity);
 
-                            System.Console.WriteLine($"Hit player! Player health: {health.CurrentHealth}");
+                            if (world.TryGetComponent<StatsComponent>(playerEntity, out var updatedStats))
+                                System.Console.WriteLine($"Hit player! Player health: {updatedStats.Health}");
                             break;
                         }
                     }
@@ -103,10 +112,13 @@ namespace ECS_Base.Mechanics.Combat.Systems
             // Remove dead entities (enemies and player)
             foreach (var entity in world.GetEntities())
             {
-                if (world.TryGetComponent<HealthComponent>(entity, out var health))
+                if (world.TryGetComponent<StatsComponent>(entity, out var stats))
                 {
-                    if (health.CurrentHealth <= 0)
+                    if (stats.IsDead || stats.Health <= 0)
                     {
+                        if (world.HasComponent<ECS_Base.Mechanics.Stats.Components.RespawnComponent>(entity))
+                            continue;
+
                         entitiesToRemove.Add(entity);
 
                         if (world.HasComponent<PlayerComponent>(entity))
@@ -121,6 +133,21 @@ namespace ECS_Base.Mechanics.Combat.Systems
             {
                 world.RemoveEntity(entity);
             }
+        }
+
+        private void ApplyDamage(World world, Entity target, float damage)
+        {
+            if (_statsSystem != null)
+            {
+                _statsSystem.ApplyDamage(world, target, damage);
+                return;
+            }
+
+            if (!world.TryGetComponent<StatsComponent>(target, out var stats))
+                return;
+
+            stats.TakeDamage(damage);
+            world.AddComponent(target, stats);
         }
     }
 }

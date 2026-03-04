@@ -2,6 +2,7 @@ using ECS_Base.Mechanics.Core;
 using ECS_Base.Mechanics.Input.Components;
 using ECS_Base.Mechanics.Movement.Components;
 using Microsoft.Xna.Framework;
+using ECS_Base.Mechanics.Stats.Components;
 
 namespace ECS_Base.Mechanics.Movement.Systems
 {
@@ -15,6 +16,16 @@ namespace ECS_Base.Mechanics.Movement.Systems
         {
             foreach (var entity in world.Query<TopDownMovementComponent, InputComponent, VelocityComponent>())
             {
+                if (world.TryGetComponent<StatsComponent>(entity, out var stats) && stats.IsDead)
+                {
+                    if (world.TryGetComponent<VelocityComponent>(entity, out var deadVel))
+                    {
+                        deadVel.Value = Vector2.Zero;
+                        world.AddComponent(entity, deadVel);
+                    }
+                    continue;
+                }
+
                 var movement = world.GetComponent<TopDownMovementComponent>(entity);
                 var input = world.GetComponent<InputComponent>(entity);
                 var velocity = world.GetComponent<VelocityComponent>(entity);

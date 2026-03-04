@@ -1,8 +1,9 @@
 namespace ECS_Base.Mechanics.Combat.Components
 {
     /// <summary>
-    /// Health component - entities with this can take damage and die
+    /// Health component - deprecated. Use StatsComponent instead.
     /// </summary>
+    [System.Obsolete("Use StatsComponent for health and combat.")]
     public struct HealthComponent
     {
         public int CurrentHealth;

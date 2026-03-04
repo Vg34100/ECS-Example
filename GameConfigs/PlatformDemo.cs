@@ -10,7 +10,15 @@ using ECS_Base.Mechanics.Platformer.Components;
 using ECS_Base.Mechanics.Platformer.Systems;
 using ECS_Base.Mechanics.Collision.Components;
 using ECS_Base.Mechanics.Collision.Systems;
+using ECS_Base.Mechanics.Stats.Components;
+using ECS_Base.Mechanics.Stats.Systems;
+using ECS_Base.Mechanics.UI.Components;
+using ECS_Base.Mechanics.Rendering.Systems;
+using ECS_Base.Mechanics.Progression.Components;
+using ECS_Base.Mechanics.Progression.Systems;
 using ECS_Base.Mechanics.PlayerController.Components;
+using ECS_Base.Mechanics.Combat.Components;
+using ECS_Base.Mechanics.Combat.Systems;
 using System.Collections.Generic;
 
 namespace ECS_Base.GameConfigs
@@ -32,6 +40,15 @@ namespace ECS_Base.GameConfigs
 
             // Physics (gravity)
             systemManager.AddSystem(physicsSystem);
+
+            // Stats (health, etc.)
+            var statsSystem = new StatsSystem();
+            systemManager.AddSystem(statsSystem);
+            systemManager.AddSystem(new InvulnerabilitySystem());
+            systemManager.AddSystem(new RespawnSystem());
+            systemManager.AddSystem(new DamageFlashSystem());
+            systemManager.AddSystem(new CollectibleSystem());
+            systemManager.AddSystem(new ContactDamageSystem(statsSystem));
 
             // Platform movement
             var platformSystem = new PlatformSystem();
@@ -89,8 +106,38 @@ namespace ECS_Base.GameConfigs
 
             // Mark as player for input system
             world.AddComponent(player, new PlatformDemoPlayerComponent());
+            world.AddComponent(player, new PlayerComponent());
+
+            // Stats for player (3-hit health)
+            world.AddComponent(player, new StatsComponent(maxHealth: 3, attack: 10f, defense: 0f, speed: 1f));
+            world.AddComponent(player, new InvulnerabilityOnHitComponent(duration: 1.0f));
+            world.AddComponent(player, new DamageFlashOnHitComponent(flashColor: Color.White, duration: 0.4f));
+            world.AddComponent(player, new RespawnComponent(new Vector2(200, 575), delay: 2.5f));
+            world.AddComponent(player, new CurrencyComponent());
+
+            // UI: segmented bar (Mario-style)
+            var ui = world.CreateEntity();
+            world.AddComponent(ui, new UISegmentedBarComponent(
+                position: new Vector2(16, 16),
+                targetEntityId: player.Id,
+                segments: 3
+            ));
+
+            // UI: counters
+            var coinsText = world.CreateEntity();
+            world.AddComponent(coinsText, new UITextComponent(null, "Coins: 0", new Vector2(16, 32)));
+            world.AddComponent(coinsText, new UICounterComponent(player.Id, CounterType.Coins, "Coins: "));
+
+            var starsText = world.CreateEntity();
+            world.AddComponent(starsText, new UITextComponent(null, "Stars: 0", new Vector2(16, 48)));
+            world.AddComponent(starsText, new UICounterComponent(player.Id, CounterType.Stars, "Stars: "));
+
+            var scoreText = world.CreateEntity();
+            world.AddComponent(scoreText, new UITextComponent(null, "Score: 0", new Vector2(16, 64)));
+            world.AddComponent(scoreText, new UICounterComponent(player.Id, CounterType.Score, "Score: "));
 
             // Static ground platform
+            CreateStaticPlatform(world, new Vector2(0, 600), 1400, 20, Color.Green, false);
             CreateStaticPlatform(world, new Vector2(200, 600), 400, 20, Color.Green, false);
 
             // One-way platform (can jump through from below)
@@ -191,7 +238,16 @@ namespace ECS_Base.GameConfigs
             CreateStaticPlatform(world, new Vector2(250, 250), 80, 15, Color.Green, false);
             CreateStaticPlatform(world, new Vector2(350, 200), 80, 15, Color.Green, false);
 
+            // Hazard spikes (contact damage)
+            CreateHazard(world, new Vector2(520, 585), 60, 15, Color.Red);
+
             System.Console.WriteLine("PlatformDemo: Initialized with various platform types");
+
+            // Collectibles
+            SpawnCoin(world, new Vector2(260, 540));
+            SpawnCoin(world, new Vector2(310, 540));
+            SpawnCoin(world, new Vector2(360, 540));
+            SpawnStar(world, new Vector2(600, 180));
         }
 
         private void CreateStaticPlatform(World world, Vector2 position, float width, float height, Color color, bool oneWay)
@@ -210,6 +266,54 @@ namespace ECS_Base.GameConfigs
                 ShapeComponent.ShapeType.Rectangle,
                 oneWay ? color * 0.7f : color,
                 new Vector2(width, height)));
+        }
+
+        private void SpawnCoin(World world, Vector2 position)
+        {
+            var coin = world.CreateEntity();
+            world.AddComponent(coin, new PositionComponent { Value = position });
+            world.AddComponent(coin, new CollectibleComponent(CollectibleType.Coin, amount: 1, scoreValue: 100));
+            world.AddComponent(coin, new ColliderComponent(
+                new Rectangle(0, 0, 10, 10),
+                ColliderComponent.ColliderType.Dynamic
+            ));
+            world.AddComponent(coin, new ShapeComponent(
+                ShapeComponent.ShapeType.Circle,
+                Color.Gold,
+                new Vector2(10, 10)
+            ));
+        }
+
+        private void SpawnStar(World world, Vector2 position)
+        {
+            var star = world.CreateEntity();
+            world.AddComponent(star, new PositionComponent { Value = position });
+            world.AddComponent(star, new CollectibleComponent(CollectibleType.Star, amount: 1, scoreValue: 1000));
+            world.AddComponent(star, new ColliderComponent(
+                new Rectangle(0, 0, 12, 12),
+                ColliderComponent.ColliderType.Dynamic
+            ));
+            world.AddComponent(star, new ShapeComponent(
+                ShapeComponent.ShapeType.Circle,
+                Color.Yellow,
+                new Vector2(12, 12)
+            ));
+        }
+
+        private void CreateHazard(World world, Vector2 position, int width, int height, Color color)
+        {
+            var hazard = world.CreateEntity();
+            world.AddComponent(hazard, new PositionComponent { Value = position });
+            world.AddComponent(hazard, new ColliderComponent(
+                new Rectangle(0, 0, width, height),
+                ColliderComponent.ColliderType.Static
+            ));
+            world.AddComponent(hazard, new ShapeComponent(
+                ShapeComponent.ShapeType.Rectangle,
+                color,
+                new Vector2(width, height)
+            ));
+            world.AddComponent(hazard, new ContactDamageComponent(damage: 1));
         }
 
         /// <summary>
@@ -238,6 +342,13 @@ namespace ECS_Base.GameConfigs
                 {
                     if (!world.TryGetComponent<VelocityComponent>(entity, out var velocity))
                         continue;
+
+                    if (world.TryGetComponent<StatsComponent>(entity, out var stats) && stats.IsDead)
+                    {
+                        velocity.Value = Vector2.Zero;
+                        world.AddComponent(entity, velocity);
+                        continue;
+                    }
 
                     // Horizontal movement
                     velocity.Value.X = 0;

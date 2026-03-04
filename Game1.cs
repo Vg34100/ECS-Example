@@ -7,6 +7,7 @@ using ECS_Base.Mechanics.Camera.Systems;
 using ECS_Base.Mechanics.Level.Systems;
 using ECS_Base.Mechanics.Collision.Systems;
 using ECS_Base.Mechanics.Rendering.Systems;
+using ECS_Base.Mechanics.UI.Systems;
 using ECS_Base.GameConfigs;
 using System.Linq;
 
@@ -20,6 +21,7 @@ namespace ECS_Base
         private World _world;
         private SystemManager _systemManager;
         private IGameConfig _config;
+        private UISystem _uiSystem;
 
         // Public properties for systems that configs might need to set
         public CameraSystem CameraSystem { get; set; }
@@ -84,6 +86,10 @@ namespace ECS_Base
                 var renderSystem = new RenderSystem(_spriteBatch, GraphicsDevice, CameraSystem);
                 _systemManager.AddSystem(renderSystem);
                 _systemManager.AddSystem(new LevelRenderSystem(_spriteBatch, CameraSystem));
+
+                // UI should render after world systems
+                _uiSystem = new UISystem(GraphicsDevice, _spriteBatch, _font);
+                _systemManager.AddSystem(_uiSystem);
             }
 
             // Load levels if level manager exists (platformer config)

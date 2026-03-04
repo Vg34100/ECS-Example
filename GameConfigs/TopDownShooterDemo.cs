@@ -10,9 +10,14 @@ using ECS_Base.Mechanics.Input.Components;
 using ECS_Base.Mechanics.Input.Systems;
 using ECS_Base.Mechanics.PlayerController.Components;
 using ECS_Base.Mechanics.Rendering.Components;
-using ECS_Base.Mechanics.Rendering.Systems;
 using ECS_Base.Mechanics.Combat.Components;
 using ECS_Base.Mechanics.Combat.Systems;
+using ECS_Base.Mechanics.Stats.Components;
+using ECS_Base.Mechanics.Stats.Systems;
+using ECS_Base.Mechanics.UI.Components;
+using ECS_Base.Mechanics.Progression.Components;
+using ECS_Base.Mechanics.Progression.Systems;
+using ECS_Base.Mechanics.Rendering.Systems;
 
 namespace ECS_Base.GameConfigs
 {
@@ -42,7 +47,14 @@ namespace ECS_Base.GameConfigs
             game.CollisionSystem = collisionSystem;
             systemManager.AddSystem(new SweptCollisionSystem()); // For projectiles
 
-            systemManager.AddSystem(new CombatSystem());
+            var statsSystem = new StatsSystem();
+            systemManager.AddSystem(statsSystem);
+            systemManager.AddSystem(new InvulnerabilitySystem());
+            systemManager.AddSystem(new RespawnSystem());
+            systemManager.AddSystem(new DamageFlashSystem());
+            systemManager.AddSystem(new CombatSystem(statsSystem));
+            systemManager.AddSystem(new CollectibleSystem());
+            systemManager.AddSystem(new ContactDamageSystem(statsSystem));
 
             var cameraSystem = new CameraSystem(new Vector2(
                 game.GraphicsDeviceManager.PreferredBackBufferWidth,
@@ -87,8 +99,26 @@ namespace ECS_Base.GameConfigs
                 new Vector2(12, 16)
             ));
             world.AddComponent(player, new PlayerComponent()); // Marker
-            world.AddComponent(player, new HealthComponent(maxHealth: 100));
+            world.AddComponent(player, new StatsComponent(maxHealth: 6, attack: 10f, defense: 0f, speed: 1f));
+            world.AddComponent(player, new InvulnerabilityOnHitComponent(duration: 0.8f));
+            world.AddComponent(player, new DamageFlashOnHitComponent(flashColor: Color.White, duration: 0.35f));
+            world.AddComponent(player, new RespawnComponent(new Vector2(350, 250), delay: 2.0f));
+            world.AddComponent(player, new CurrencyComponent());
             world.AddComponent(player, new CameraTargetComponent { IsActive = true });
+
+            // UI: hearts (3 hearts with half-health units)
+            var ui = world.CreateEntity();
+            world.AddComponent(ui, new UIHeartsComponent(
+                position: new Vector2(16, 16),
+                targetEntityId: player.Id,
+                unitsPerHeart: 2,
+                heartSize: 16,
+                heartSpacing: 4
+            ));
+
+            var rupeesText = world.CreateEntity();
+            world.AddComponent(rupeesText, new UITextComponent(null, "Rupees: 0", new Vector2(16, 36)));
+            world.AddComponent(rupeesText, new UICounterComponent(player.Id, CounterType.Rupees, "Rupees: "));
 
             // Spawn melee enemies (chase only)
             SpawnEnemy(world, 200, 150, canShoot: false);
@@ -104,6 +134,11 @@ namespace ECS_Base.GameConfigs
             System.Console.WriteLine("Red enemies: melee (chase only)");
             System.Console.WriteLine("Orange enemies: ranged (shoot red projectiles)");
             System.Console.WriteLine("Kill all enemies!");
+
+            // Rupees (currency)
+            SpawnRupee(world, new Vector2(160, 160));
+            SpawnRupee(world, new Vector2(620, 140));
+            SpawnRupee(world, new Vector2(620, 420));
         }
 
         private void CreateWall(World world, float x, float y, int width, int height, Color color)
@@ -144,7 +179,24 @@ namespace ECS_Base.GameConfigs
                 canShoot ? Color.Orange : Color.Red, // Orange for shooters
                 new Vector2(14, 14)
             ));
-            world.AddComponent(enemy, new HealthComponent(maxHealth: 30));
+            world.AddComponent(enemy, new StatsComponent(maxHealth: 30, attack: 5f, defense: 0f, speed: 1f));
+            world.AddComponent(enemy, new ContactDamageComponent(damage: 1));
+        }
+
+        private void SpawnRupee(World world, Vector2 position)
+        {
+            var rupee = world.CreateEntity();
+            world.AddComponent(rupee, new PositionComponent(position.X, position.Y));
+            world.AddComponent(rupee, new CollectibleComponent(CollectibleType.Rupee, amount: 1, scoreValue: 50));
+            world.AddComponent(rupee, new ColliderComponent(
+                new Rectangle(0, 0, 8, 12),
+                ColliderComponent.ColliderType.Dynamic
+            ));
+            world.AddComponent(rupee, new ShapeComponent(
+                ShapeComponent.ShapeType.Rectangle,
+                Color.LawnGreen,
+                new Vector2(8, 12)
+            ));
         }
     }
 }
