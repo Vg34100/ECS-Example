@@ -41,6 +41,7 @@ namespace ECS_Base.GameConfigs
             systemManager.AddSystem(new ProjectileSystem());
             systemManager.AddSystem(new KnockbackSystem());
             systemManager.AddSystem(new MovementSystem());
+            systemManager.AddSystem(new FloatingSystem());
 
             // Collision systems
             var collisionSystem = new CollisionSystem();
@@ -195,11 +196,8 @@ namespace ECS_Base.GameConfigs
                 new Rectangle(0, 0, 8, 12),
                 ColliderComponent.ColliderType.Dynamic
             ));
-            world.AddComponent(rupee, new ShapeComponent(
-                ShapeComponent.ShapeType.Rectangle,
-                Color.LawnGreen,
-                new Vector2(8, 12)
-            ));
+            world.AddComponent(rupee, new WorldIconComponent(UIIconType.Rupee, Color.LawnGreen, 2));
+            world.AddComponent(rupee, new FloatingComponent(position, amplitude: 2.5f, speed: 2.0f));
         }
     }
 }

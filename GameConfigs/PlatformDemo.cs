@@ -19,6 +19,7 @@ using ECS_Base.Mechanics.Progression.Systems;
 using ECS_Base.Mechanics.PlayerController.Components;
 using ECS_Base.Mechanics.Combat.Components;
 using ECS_Base.Mechanics.Combat.Systems;
+using ECS_Base.Mechanics.Rendering.Components;
 using System.Collections.Generic;
 
 namespace ECS_Base.GameConfigs
@@ -49,10 +50,13 @@ namespace ECS_Base.GameConfigs
             systemManager.AddSystem(new RespawnSystem());
             systemManager.AddSystem(new DamageFlashSystem());
             systemManager.AddSystem(new CollectibleSystem());
+            systemManager.AddSystem(new PowerupSystem());
+            systemManager.AddSystem(new FloatingSystem());
 
             // Platform movement
             var platformSystem = new PlatformSystem();
             systemManager.AddSystem(platformSystem);
+            systemManager.AddSystem(new PatrolSystem());
 
             // Apply velocity (movement must be AFTER physics and platform updates)
             systemManager.AddSystem(new MovementSystem());
@@ -77,7 +81,7 @@ namespace ECS_Base.GameConfigs
                 initialPosition: new Vector2(640, 360),
                 lagFactor: 0.95f,
                 offset: Vector2.Zero,
-                zoom: 1f,
+                zoom: 1.35f,
                 dampeningThreshold: 2f));
 
             // Create player (spawn on ground platform at Y=575 so player is standing on it)
@@ -85,7 +89,7 @@ namespace ECS_Base.GameConfigs
             world.AddComponent(player, new PositionComponent { Value = new Vector2(200, 575) });
             world.AddComponent(player, new VelocityComponent { Value = Vector2.Zero });
 
-            var physics = new PlatformerPhysicsComponent(500f, 1200f);
+            var physics = new PlatformerPhysicsComponent(360f, 1200f);
             physics.MaxAirJumps = 1; // Double jump
             world.AddComponent(player, physics);
 
@@ -123,17 +127,23 @@ namespace ECS_Base.GameConfigs
                 targetEntityId: player.Id,
                 segments: 3
             ));
+            if (world.TryGetComponent<UISegmentedBarComponent>(ui, out var bar))
+            {
+                bar.BaseSegments = 3;
+                bar.BonusFillColor = new Color(220, 60, 60);
+                world.AddComponent(ui, bar);
+            }
 
             // UI: counters
             var coinsText = world.CreateEntity();
-            world.AddComponent(coinsText, new UITextComponent(null, "Coins: 0", new Vector2(16, 32)));
-            world.AddComponent(coinsText, new UICounterComponent(player.Id, CounterType.Coins, "Coins: "));
+            world.AddComponent(coinsText, new UITextComponent(null, "0", new Vector2(36, 32)));
+            world.AddComponent(coinsText, new UICounterComponent(player.Id, CounterType.Coins, ""));
             world.AddComponent(coinsText, new UIIconComponent(new Vector2(16, 32), UIIconType.Coin, Color.Gold, 2));
 
             var starsText = world.CreateEntity();
-            world.AddComponent(starsText, new UITextComponent(null, "Stars: 0", new Vector2(16, 48)));
-            world.AddComponent(starsText, new UICounterComponent(player.Id, CounterType.Stars, "Stars: "));
-            world.AddComponent(starsText, new UIIconComponent(new Vector2(16, 48), UIIconType.Star, Color.Yellow, 2));
+            world.AddComponent(starsText, new UITextComponent(null, "0", new Vector2(40, 50)));
+            world.AddComponent(starsText, new UICounterComponent(player.Id, CounterType.Stars, ""));
+            world.AddComponent(starsText, new UIIconComponent(new Vector2(16, 48), UIIconType.Star, Color.Yellow, 3));
 
             var scoreText = world.CreateEntity();
             world.AddComponent(scoreText, new UITextComponent(null, "Score: 0", new Vector2(16, 64)));
@@ -246,11 +256,19 @@ namespace ECS_Base.GameConfigs
 
             System.Console.WriteLine("PlatformDemo: Initialized with various platform types");
 
-            // Collectibles
+            // Collectibles (pacing)
             SpawnCoin(world, new Vector2(260, 540));
-            SpawnCoin(world, new Vector2(310, 540));
-            SpawnCoin(world, new Vector2(360, 540));
+            SpawnCoin(world, new Vector2(290, 520));
+            SpawnCoin(world, new Vector2(320, 500));
+            SpawnCoin(world, new Vector2(350, 520));
+            SpawnCoin(world, new Vector2(380, 540));
             SpawnStar(world, new Vector2(600, 180));
+
+            // Enemies
+            SpawnGoomba(world, new Vector2(700, 568), 40, 1320);
+
+            // Powerup
+            SpawnMushroom(world, new Vector2(460, 552));
         }
 
         private void CreateStaticPlatform(World world, Vector2 position, float width, float height, Color color, bool oneWay)
@@ -280,11 +298,8 @@ namespace ECS_Base.GameConfigs
                 new Rectangle(0, 0, 10, 10),
                 ColliderComponent.ColliderType.Dynamic
             ));
-            world.AddComponent(coin, new ShapeComponent(
-                ShapeComponent.ShapeType.Circle,
-                Color.Gold,
-                new Vector2(10, 10)
-            ));
+            world.AddComponent(coin, new WorldIconComponent(UIIconType.Coin, Color.Gold, 2));
+            world.AddComponent(coin, new FloatingComponent(position, amplitude: 2.5f, speed: 2.2f));
         }
 
         private void SpawnStar(World world, Vector2 position)
@@ -296,11 +311,42 @@ namespace ECS_Base.GameConfigs
                 new Rectangle(0, 0, 12, 12),
                 ColliderComponent.ColliderType.Dynamic
             ));
-            world.AddComponent(star, new ShapeComponent(
-                ShapeComponent.ShapeType.Circle,
-                Color.Yellow,
-                new Vector2(12, 12)
+            world.AddComponent(star, new WorldIconComponent(UIIconType.Star, Color.Yellow, 3));
+            world.AddComponent(star, new FloatingComponent(position, amplitude: 3.0f, speed: 1.8f));
+        }
+
+        private void SpawnGoomba(World world, Vector2 position, float minX, float maxX)
+        {
+            var enemy = world.CreateEntity();
+            world.AddComponent(enemy, new PositionComponent { Value = position });
+            world.AddComponent(enemy, new VelocityComponent());
+            world.AddComponent(enemy, new PatrolComponent(minX, maxX, speed: 40f, direction: -1));
+            world.AddComponent(enemy, new PlatformerPhysicsComponent(500f, 1200f));
+            world.AddComponent(enemy, new GroundedComponent(false));
+            world.AddComponent(enemy, new ColliderComponent(
+                new Rectangle(0, 0, 14, 14),
+                ColliderComponent.ColliderType.Dynamic
             ));
+            world.AddComponent(enemy, new ShapeComponent(
+                ShapeComponent.ShapeType.Rectangle,
+                new Color(155, 80, 30),
+                new Vector2(14, 14)
+            ));
+            world.AddComponent(enemy, new ContactDamageComponent(damage: 1));
+            world.AddComponent(enemy, new StatsComponent(maxHealth: 1, attack: 1f, defense: 0f, speed: 1f));
+        }
+
+        private void SpawnMushroom(World world, Vector2 position)
+        {
+            var powerup = world.CreateEntity();
+            world.AddComponent(powerup, new PositionComponent { Value = position });
+            world.AddComponent(powerup, new ColliderComponent(
+                new Rectangle(0, 0, 12, 12),
+                ColliderComponent.ColliderType.Dynamic
+            ));
+            world.AddComponent(powerup, new WorldIconComponent(UIIconType.Mushroom, new Color(220, 40, 40), 3));
+            world.AddComponent(powerup, new FloatingComponent(position, amplitude: 2.5f, speed: 2.0f));
+            world.AddComponent(powerup, new PowerupComponent(PowerupType.MaxHealthUp, amount: 1f));
         }
 
         private void CreateHazard(World world, Vector2 position, int width, int height, Color color)
@@ -365,9 +411,9 @@ namespace ECS_Base.GameConfigs
                     // Horizontal movement
                     velocity.Value.X = 0;
                     if (keyboardState.IsKeyDown(Keys.Left) || keyboardState.IsKeyDown(Keys.A))
-                        velocity.Value.X = -200f;
-                    if (keyboardState.IsKeyDown(Keys.Right) || keyboardState.IsKeyDown(Keys.D))
-                        velocity.Value.X = 200f;
+                        velocity.Value.X = -140f;
+                if (keyboardState.IsKeyDown(Keys.Right) || keyboardState.IsKeyDown(Keys.D))
+                        velocity.Value.X = 140f;
 
                     world.AddComponent(entity, velocity);
 

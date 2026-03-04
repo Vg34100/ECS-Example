@@ -36,7 +36,11 @@ namespace ECS_Base.Mechanics.UI.Systems
 
         private void DrawBar(SpriteBatch spriteBatch, UISegmentedBarComponent bar, StatsComponent stats)
         {
-            int segments = bar.Segments <= 0 ? 3 : bar.Segments;
+            int baseSegments = bar.BaseSegments > 0 ? bar.BaseSegments : (bar.Segments <= 0 ? 3 : bar.Segments);
+            int bonusSegments = stats.MaxHealth > baseSegments
+                ? (int)System.Math.Ceiling(stats.MaxHealth - baseSegments)
+                : 0;
+            int segments = baseSegments + bonusSegments;
             float segmentValue = stats.MaxHealth > 0 ? stats.MaxHealth / segments : 1f;
 
             for (int i = 0; i < segments; i++)
@@ -68,7 +72,8 @@ namespace ECS_Base.Mechanics.UI.Systems
                         (int)(bounds.Width * fillPercent),
                         bounds.Height
                     );
-                    spriteBatch.Draw(_pixel, fillRect, bar.FillColor);
+                    var fillColor = i < baseSegments ? bar.FillColor : bar.BonusFillColor;
+                    spriteBatch.Draw(_pixel, fillRect, fillColor);
                 }
 
                 // Border

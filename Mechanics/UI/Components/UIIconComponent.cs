@@ -26,6 +26,7 @@ namespace ECS_Base.Mechanics.UI.Components
         Coin,
         Star,
         Rupee,
-        Arrow
+        Arrow,
+        Mushroom
     }
 }

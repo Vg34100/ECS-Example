@@ -1,16 +1,21 @@
 using ECS_Base.Mechanics.Core;
+using ECS_Base.Mechanics.Movement.Components;
+using ECS_Base.Mechanics.Rendering.Components;
 using ECS_Base.Mechanics.UI.Components;
+using ECS_Base.Mechanics.Camera.Systems;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace ECS_Base.Mechanics.UI.Systems
+namespace ECS_Base.Mechanics.Rendering.Systems
 {
     /// <summary>
-    /// Renders small pixel icons.
+    /// Renders pixel icons in world space.
     /// </summary>
-    public class UIIconSystem
+    public class WorldIconSystem
     {
+        private readonly SpriteBatch _spriteBatch;
         private readonly Texture2D _pixel;
+        private readonly CameraSystem _cameraSystem;
 
         private static readonly string[] CoinMask =
         {
@@ -72,18 +77,23 @@ namespace ECS_Base.Mechanics.UI.Systems
             "01111110"
         };
 
-        public UIIconSystem(GraphicsDevice graphicsDevice)
+        public WorldIconSystem(SpriteBatch spriteBatch, GraphicsDevice graphicsDevice, CameraSystem cameraSystem)
         {
+            _spriteBatch = spriteBatch;
+            _cameraSystem = cameraSystem;
             _pixel = new Texture2D(graphicsDevice, 1, 1);
             _pixel.SetData(new[] { Color.White });
         }
 
-        public void Draw(World world, SpriteBatch spriteBatch)
+        public void Draw(World world)
         {
-            foreach (var entity in world.Query<UIIconComponent>())
+            var viewMatrix = _cameraSystem.GetViewMatrix(world);
+            _spriteBatch.Begin(transformMatrix: viewMatrix, samplerState: SamplerState.PointClamp);
+
+            foreach (var entity in world.Query<WorldIconComponent, PositionComponent>())
             {
-                if (!world.TryGetComponent<UIIconComponent>(entity, out var icon))
-                    continue;
+                var icon = world.GetComponent<WorldIconComponent>(entity);
+                var position = world.GetComponent<PositionComponent>(entity);
 
                 var mask = icon.Type switch
                 {
@@ -95,11 +105,13 @@ namespace ECS_Base.Mechanics.UI.Systems
                     _ => CoinMask
                 };
 
-                DrawMask(spriteBatch, icon.Position, mask, icon.Color, icon.PixelSize);
+                DrawMask(position.Value, mask, icon.Color, icon.PixelSize);
             }
+
+            _spriteBatch.End();
         }
 
-        private void DrawMask(SpriteBatch spriteBatch, Vector2 pos, string[] mask, Color color, int pixelSize)
+        private void DrawMask(Vector2 pos, string[] mask, Color color, int pixelSize)
         {
             for (int y = 0; y < mask.Length; y++)
             {
@@ -108,7 +120,7 @@ namespace ECS_Base.Mechanics.UI.Systems
                     if (mask[y][x] != '1')
                         continue;
 
-                    spriteBatch.Draw(
+                    _spriteBatch.Draw(
                         _pixel,
                         new Rectangle(
                             (int)pos.X + x * pixelSize,

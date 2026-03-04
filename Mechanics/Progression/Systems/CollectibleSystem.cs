@@ -24,12 +24,14 @@ namespace ECS_Base.Mechanics.Progression.Systems
                 !world.TryGetComponent<ColliderComponent>(player, out var playerCollider))
                 return;
 
+            const int PICKUP_PADDING = 6;
             Rectangle playerBounds = new Rectangle(
                 (int)playerPos.Value.X + playerCollider.Bounds.X,
                 (int)playerPos.Value.Y + playerCollider.Bounds.Y,
                 playerCollider.Bounds.Width,
                 playerCollider.Bounds.Height
             );
+            playerBounds.Inflate(PICKUP_PADDING, PICKUP_PADDING);
 
             var toRemove = new List<Entity>();
 

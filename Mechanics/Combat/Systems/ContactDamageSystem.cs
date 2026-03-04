@@ -72,6 +72,17 @@ namespace ECS_Base.Mechanics.Combat.Systems
                 if (!playerBounds.Intersects(bounds))
                     continue;
 
+                // Stomp check (player falling onto enemy)
+                if (world.TryGetComponent<VelocityComponent>(player, out var playerVel) &&
+                    playerVel.Value.Y > 0 &&
+                    playerBounds.Bottom <= bounds.Top + 4)
+                {
+                    world.RemoveEntity(entity);
+                    playerVel.Value.Y = -180f; // bounce
+                    world.AddComponent(player, playerVel);
+                    continue;
+                }
+
                 if (DEBUG_LOG)
                 {
                     System.Console.WriteLine($"Contact damage: player {player.Id} hit by {entity.Id}");

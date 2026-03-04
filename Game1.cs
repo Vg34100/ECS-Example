@@ -10,6 +10,7 @@ using ECS_Base.Mechanics.Rendering.Systems;
 using ECS_Base.Mechanics.UI.Systems;
 using ECS_Base.GameConfigs;
 using System.Linq;
+using Microsoft.Xna.Framework.Input;
 
 namespace ECS_Base
 {
@@ -22,6 +23,7 @@ namespace ECS_Base
         private SystemManager _systemManager;
         private IGameConfig _config;
         private UISystem _uiSystem;
+        private int _previousMouseWheel;
 
         // Public properties for systems that configs might need to set
         public CameraSystem CameraSystem { get; set; }
@@ -86,6 +88,7 @@ namespace ECS_Base
                 var renderSystem = new RenderSystem(_spriteBatch, GraphicsDevice, CameraSystem);
                 _systemManager.AddSystem(renderSystem);
                 _systemManager.AddSystem(new LevelRenderSystem(_spriteBatch, CameraSystem));
+                _systemManager.AddSystem(new WorldIconSystem(_spriteBatch, GraphicsDevice, CameraSystem));
 
                 // UI should render after world systems
                 _uiSystem = new UISystem(GraphicsDevice, _spriteBatch, _font);
@@ -146,6 +149,22 @@ namespace ECS_Base
             {
                 Restart();
             }
+
+            // Mouse wheel zoom for active camera
+            var mouse = Mouse.GetState();
+            int wheelDelta = mouse.ScrollWheelValue - _previousMouseWheel;
+            if (wheelDelta != 0)
+            {
+                var cameraEntity = _world.GetEntities()
+                    .FirstOrDefault(e => _world.TryGetComponent<ECS_Base.Mechanics.Camera.Components.CameraComponent>(e, out var cam) && cam.IsActive);
+
+                if (cameraEntity != null && _world.TryGetComponent<ECS_Base.Mechanics.Camera.Components.CameraComponent>(cameraEntity, out var camComp))
+                {
+                    camComp.Zoom = MathHelper.Clamp(camComp.Zoom + (wheelDelta * 0.001f), 0.6f, 3.0f);
+                    _world.AddComponent(cameraEntity, camComp);
+                }
+            }
+            _previousMouseWheel = mouse.ScrollWheelValue;
 
             float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
 

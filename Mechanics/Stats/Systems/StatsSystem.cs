@@ -2,6 +2,7 @@ using ECS_Base.Mechanics.Core;
 using ECS_Base.Mechanics.Stats.Components;
 using ECS_Base.Mechanics.Movement.Components;
 using ECS_Base.Mechanics.Rendering.Components;
+using ECS_Base.Mechanics.Progression.Components;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -87,6 +88,7 @@ namespace ECS_Base.Mechanics.Stats.Systems
 
             if (actualDamage > 0)
             {
+                RemoveArmorOnHit(world, target);
                 ApplyInvulnerability(world, target);
                 ApplyDamageFlash(world, target);
             }
@@ -203,6 +205,20 @@ namespace ECS_Base.Mechanics.Stats.Systems
                 flashColor: onHit.FlashColor,
                 duration: onHit.Duration
             ));
+        }
+
+        private void RemoveArmorOnHit(World world, Entity target)
+        {
+            if (!world.TryGetComponent<ArmorComponent>(target, out var armor))
+                return;
+
+            if (!world.TryGetComponent<StatsComponent>(target, out var stats))
+                return;
+
+            stats.MaxHealth = System.Math.Max(1f, stats.MaxHealth - armor.ExtraHealth);
+            stats.Health = System.Math.Min(stats.Health, stats.MaxHealth);
+            world.AddComponent(target, stats);
+            world.RemoveComponent<ArmorComponent>(target);
         }
     }
 }
