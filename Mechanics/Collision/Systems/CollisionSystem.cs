@@ -3,8 +3,10 @@ using ECS_Base.Mechanics.Core;
 using ECS_Base.Mechanics.Movement.Components;
 using ECS_Base.Mechanics.Collision.Components;
 using ECS_Base.Mechanics.Level.Components;
+using ECS_Base.Mechanics.Platformer.Components;
 using System.Collections.Generic;
 using System;
+using System.Linq;
 
 namespace ECS_Base.Mechanics.Collision.Systems
 {
@@ -15,7 +17,7 @@ namespace ECS_Base.Mechanics.Collision.Systems
     public class CollisionSystem
     {
         private const int TILE_SIZE = 16;
-        private List<Rectangle> _solidObjects = new List<Rectangle>();
+        private List<(Rectangle bounds, Entity entity)> _solidObjects = new List<(Rectangle, Entity)>();
 
         public void Update(World world, float deltaTime)
         {
@@ -39,12 +41,13 @@ namespace ECS_Base.Mechanics.Collision.Systems
                     collider.Type == ColliderComponent.ColliderType.Static &&
                     world.TryGetComponent<PositionComponent>(entity, out var position))
                 {
-                    _solidObjects.Add(new Rectangle(
+                    var bounds = new Rectangle(
                         (int)position.Value.X + collider.Bounds.X,
                         (int)position.Value.Y + collider.Bounds.Y,
                         collider.Bounds.Width,
                         collider.Bounds.Height
-                    ));
+                    );
+                    _solidObjects.Add((bounds, entity));  // Store entity reference
                 }
             }
 
@@ -75,15 +78,35 @@ namespace ECS_Base.Mechanics.Collision.Systems
                 // Find the collision with smallest penetration (ignore micro-penetrations to prevent jitter)
                 const float MIN_PENETRATION_THRESHOLD = 0.1f;
 
-                foreach (var solid in _solidObjects)
+                foreach ((Rectangle solidBounds, Entity solidEntity) in _solidObjects)
                 {
-                    if (entityBounds.Intersects(solid))
+                    if (entityBounds.Intersects(solidBounds))
                     {
+                        // Check for one-way platform
+                        if (solidEntity != null &&
+                            world.TryGetComponent<PlatformComponent>(solidEntity, out var platform) &&
+                            platform.OneWay)
+                        {
+                            // Check if entity can pass through
+                            if (world.TryGetComponent<PositionComponent>(solidEntity, out var platformPos))
+                            {
+                                float platformTop = platformPos.Value.Y - platform.Height * 0.5f;
+
+                                // Can pass through if moving upward or if entity is below platform
+                                bool canPass = velocity.Value.Y < 0 || position.Value.Y > platformTop;
+
+                                if (canPass)
+                                {
+                                    continue; // Skip collision resolution for one-way platforms
+                                }
+                            }
+                        }
+
                         // Calculate penetration on each axis
-                        float leftPen = entityBounds.Right - solid.Left;
-                        float rightPen = solid.Right - entityBounds.Left;
-                        float topPen = entityBounds.Bottom - solid.Top;
-                        float bottomPen = solid.Bottom - entityBounds.Top;
+                        float leftPen = entityBounds.Right - solidBounds.Left;
+                        float rightPen = solidBounds.Right - entityBounds.Left;
+                        float topPen = entityBounds.Bottom - solidBounds.Top;
+                        float bottomPen = solidBounds.Bottom - entityBounds.Top;
 
                         // Find minimum penetration on each axis
                         float xPen = Math.Min(leftPen, rightPen);
@@ -96,7 +119,7 @@ namespace ECS_Base.Mechanics.Collision.Systems
                         if (minPen >= MIN_PENETRATION_THRESHOLD && minPen < smallestPenetration)
                         {
                             smallestPenetration = minPen;
-                            collisionToResolve = solid;
+                            collisionToResolve = solidBounds;
                             resolveX = (xPen < yPen);
                             pushLeft = (leftPen < rightPen);
                             pushUp = (topPen < bottomPen);
@@ -170,12 +193,13 @@ namespace ECS_Base.Mechanics.Collision.Systems
                 {
                     if (level.TileData[row, col] > 0)
                     {
-                        _solidObjects.Add(new Rectangle(
+                        var bounds = new Rectangle(
                             level.X + (col * TILE_SIZE),
                             level.Y + (row * TILE_SIZE),
                             TILE_SIZE,
                             TILE_SIZE
-                        ));
+                        );
+                        _solidObjects.Add((bounds, null));  // Tiles don't have entities
                     }
                 }
             }
@@ -222,15 +246,15 @@ namespace ECS_Base.Mechanics.Collision.Systems
                 1
             );
 
-            foreach (var solid in _solidObjects)
+            foreach (var (solidBounds, _) in _solidObjects)
             {
-                if (groundCheck.Intersects(solid))
+                if (groundCheck.Intersects(solidBounds))
                     grounded.IsGrounded = true;
-                if (leftCheck.Intersects(solid))
+                if (leftCheck.Intersects(solidBounds))
                     grounded.TouchingLeft = true;
-                if (rightCheck.Intersects(solid))
+                if (rightCheck.Intersects(solidBounds))
                     grounded.TouchingRight = true;
-                if (topCheck.Intersects(solid))
+                if (topCheck.Intersects(solidBounds))
                     grounded.TouchingTop = true;
             }
 
@@ -239,7 +263,7 @@ namespace ECS_Base.Mechanics.Collision.Systems
 
         public List<Rectangle> GetCollisionTiles()
         {
-            return new List<Rectangle>(_solidObjects);
+            return _solidObjects.Select(x => x.bounds).ToList();
         }
     }
 }

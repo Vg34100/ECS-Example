@@ -1,4 +1,4 @@
-﻿// Game1.cs - Enhanced with debug system integration
+// Game1.cs - Enhanced with debug system integration
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -25,6 +25,7 @@ namespace ECS_Base
         public CameraSystem CameraSystem { get; set; }
         public LevelManagerSystem LevelManagerSystem { get; set; }
         public CollisionSystem CollisionSystem { get; set; }
+        public SpriteSystem SpriteSystem { get; set; }
         public GraphicsDeviceManager GraphicsDeviceManager => _graphics;
 
         public Game1(IGameConfig config)
@@ -71,6 +72,15 @@ namespace ECS_Base
             if (CameraSystem != null)
             {
                 System.Console.WriteLine("Adding render systems...");
+
+                // Create and add sprite system if config requested it
+                if (SpriteSystem != null)
+                {
+                    // Re-create with actual SpriteBatch
+                    SpriteSystem = new SpriteSystem(_spriteBatch);
+                    _systemManager.AddSystem(SpriteSystem);
+                }
+
                 var renderSystem = new RenderSystem(_spriteBatch, GraphicsDevice, CameraSystem);
                 _systemManager.AddSystem(renderSystem);
                 _systemManager.AddSystem(new LevelRenderSystem(_spriteBatch, CameraSystem));
@@ -142,6 +152,12 @@ namespace ECS_Base
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.Black);
+
+            // Update camera matrix for sprite system
+            if (SpriteSystem != null && CameraSystem != null)
+            {
+                SpriteSystem.SetViewMatrix(CameraSystem.GetViewMatrix(_world));
+            }
 
             // Draw all systems through the system manager
             _systemManager.Draw(_world);

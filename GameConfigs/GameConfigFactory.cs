@@ -21,6 +21,11 @@ namespace ECS_Base.GameConfigs
                 "simple" => new SimplePlatformerTest(),
                 "swept" => new SweptCollisionDemo(),
                 "topdown" => new TopDownShooterDemo(),
+                "sprite" => new SpriteRenderingDemo(),
+                "animation" => new AnimationDemoSimple(),
+                "audio" => new AudioDemoSimple(),
+                "tests" => new SystemTestsDemo(),
+                "platform" => new PlatformDemo(),
                 null => new SimplePlatformerTest(), // Default to simple test
                 _ => new SimplePlatformerTest() // Default to simple test for unknown configs
             };
