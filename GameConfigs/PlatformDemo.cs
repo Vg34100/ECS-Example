@@ -40,6 +40,7 @@ namespace ECS_Base.GameConfigs
 
             // Physics (gravity)
             systemManager.AddSystem(physicsSystem);
+            systemManager.AddSystem(new KnockbackSystem());
 
             // Stats (health, etc.)
             var statsSystem = new StatsSystem();
@@ -48,7 +49,6 @@ namespace ECS_Base.GameConfigs
             systemManager.AddSystem(new RespawnSystem());
             systemManager.AddSystem(new DamageFlashSystem());
             systemManager.AddSystem(new CollectibleSystem());
-            systemManager.AddSystem(new ContactDamageSystem(statsSystem));
 
             // Platform movement
             var platformSystem = new PlatformSystem();
@@ -61,6 +61,7 @@ namespace ECS_Base.GameConfigs
             var collisionSystem = new CollisionSystem();
             systemManager.AddSystem(collisionSystem);
             game.CollisionSystem = collisionSystem;
+            systemManager.AddSystem(new ContactDamageSystem(statsSystem));
 
             // Camera
             var cameraSystem = new CameraSystem(new Vector2(
@@ -74,10 +75,10 @@ namespace ECS_Base.GameConfigs
             var cameraEntity = world.CreateEntity();
             world.AddComponent(cameraEntity, new CameraComponent(
                 initialPosition: new Vector2(640, 360),
-                lagFactor: 0.1f,
+                lagFactor: 0.95f,
                 offset: Vector2.Zero,
                 zoom: 1f,
-                dampeningThreshold: 5f));
+                dampeningThreshold: 2f));
 
             // Create player (spawn on ground platform at Y=575 so player is standing on it)
             var player = world.CreateEntity();
@@ -127,10 +128,12 @@ namespace ECS_Base.GameConfigs
             var coinsText = world.CreateEntity();
             world.AddComponent(coinsText, new UITextComponent(null, "Coins: 0", new Vector2(16, 32)));
             world.AddComponent(coinsText, new UICounterComponent(player.Id, CounterType.Coins, "Coins: "));
+            world.AddComponent(coinsText, new UIIconComponent(new Vector2(16, 32), UIIconType.Coin, Color.Gold, 2));
 
             var starsText = world.CreateEntity();
             world.AddComponent(starsText, new UITextComponent(null, "Stars: 0", new Vector2(16, 48)));
             world.AddComponent(starsText, new UICounterComponent(player.Id, CounterType.Stars, "Stars: "));
+            world.AddComponent(starsText, new UIIconComponent(new Vector2(16, 48), UIIconType.Star, Color.Yellow, 2));
 
             var scoreText = world.CreateEntity();
             world.AddComponent(scoreText, new UITextComponent(null, "Score: 0", new Vector2(16, 64)));
@@ -239,7 +242,7 @@ namespace ECS_Base.GameConfigs
             CreateStaticPlatform(world, new Vector2(350, 200), 80, 15, Color.Green, false);
 
             // Hazard spikes (contact damage)
-            CreateHazard(world, new Vector2(520, 585), 60, 15, Color.Red);
+            CreateHazard(world, new Vector2(820, 565), 40, 18, Color.Red);
 
             System.Console.WriteLine("PlatformDemo: Initialized with various platform types");
 
@@ -302,18 +305,27 @@ namespace ECS_Base.GameConfigs
 
         private void CreateHazard(World world, Vector2 position, int width, int height, Color color)
         {
-            var hazard = world.CreateEntity();
-            world.AddComponent(hazard, new PositionComponent { Value = position });
-            world.AddComponent(hazard, new ColliderComponent(
+            // Solid spike block
+            var solid = world.CreateEntity();
+            world.AddComponent(solid, new PositionComponent { Value = position });
+            world.AddComponent(solid, new ColliderComponent(
                 new Rectangle(0, 0, width, height),
                 ColliderComponent.ColliderType.Static
             ));
-            world.AddComponent(hazard, new ShapeComponent(
+            world.AddComponent(solid, new ShapeComponent(
                 ShapeComponent.ShapeType.Rectangle,
                 color,
                 new Vector2(width, height)
             ));
-            world.AddComponent(hazard, new ContactDamageComponent(damage: 1));
+
+            // Separate damage zone slightly above the solid surface
+            var damage = world.CreateEntity();
+            world.AddComponent(damage, new PositionComponent { Value = new Vector2(position.X + 6, position.Y - 2) });
+            world.AddComponent(damage, new ColliderComponent(
+                new Rectangle(0, 0, width - 12, height - 8),
+                ColliderComponent.ColliderType.Dynamic
+            ));
+            world.AddComponent(damage, new ContactDamageComponent(damage: 1));
         }
 
         /// <summary>

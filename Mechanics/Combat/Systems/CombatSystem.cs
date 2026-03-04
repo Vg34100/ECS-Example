@@ -5,6 +5,7 @@ using ECS_Base.Mechanics.Movement.Components;
 using ECS_Base.Mechanics.PlayerController.Components;
 using ECS_Base.Mechanics.Stats.Components;
 using ECS_Base.Mechanics.Stats.Systems;
+using ECS_Base.Mechanics.Movement.Components;
 using Microsoft.Xna.Framework;
 using System.Collections.Generic;
 
@@ -64,6 +65,14 @@ namespace ECS_Base.Mechanics.Combat.Systems
                             // Deal damage
                             ApplyDamage(world, enemyEntity, projectile.Damage);
 
+                            // Knockback enemy
+                            var knockDir = projectile.InitialVelocity;
+                            if (knockDir.LengthSquared() > 0.01f)
+                            {
+                                knockDir.Normalize();
+                                world.AddComponent(enemyEntity, new KnockbackComponent(knockDir * 140f, decay: 10f));
+                            }
+
                             // Destroy projectile
                             if (!entitiesToRemove.Contains(projectileEntity))
                                 entitiesToRemove.Add(projectileEntity);
@@ -96,6 +105,14 @@ namespace ECS_Base.Mechanics.Combat.Systems
                         {
                             // Deal damage
                             ApplyDamage(world, playerEntity, projectile.Damage);
+
+                            // Knockback from projectile direction
+                            var knockDir = projectile.InitialVelocity;
+                            if (knockDir.LengthSquared() > 0.01f)
+                            {
+                                knockDir.Normalize();
+                                world.AddComponent(playerEntity, new KnockbackComponent(knockDir * 160f, decay: 10f));
+                            }
 
                             // Destroy projectile
                             if (!entitiesToRemove.Contains(projectileEntity))

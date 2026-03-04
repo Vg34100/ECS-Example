@@ -97,7 +97,7 @@ namespace ECS_Base.Mechanics.Combat.Systems
             world.AddComponent(projectile, new PositionComponent(position.X + 8, position.Y + 8)); // Offset from player center
             world.AddComponent(projectile, new VelocityComponent(projectileVelocity.X, projectileVelocity.Y)); // Fast!
             world.AddComponent(projectile, new ProjectileComponent(
-                damage: 1,
+                damage: 2,
                 lifetime: 2.0f,
                 initialVelocity: projectileVelocity,
                 owner: ProjectileComponent.ProjectileOwner.Player

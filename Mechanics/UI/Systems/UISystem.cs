@@ -17,6 +17,7 @@ namespace ECS_Base.Mechanics.UI.Systems
         private readonly UIHeartsSystem _heartsSystem;
         private readonly UISegmentedBarSystem _segmentedBarSystem;
         private readonly UICounterSystem _counterSystem;
+        private readonly UIIconSystem _iconSystem;
 
         public UISystem(GraphicsDevice graphicsDevice, SpriteBatch spriteBatch, SpriteFont defaultFont)
         {
@@ -29,6 +30,7 @@ namespace ECS_Base.Mechanics.UI.Systems
             _heartsSystem = new UIHeartsSystem(graphicsDevice);
             _segmentedBarSystem = new UISegmentedBarSystem(graphicsDevice);
             _counterSystem = new UICounterSystem();
+            _iconSystem = new UIIconSystem(graphicsDevice);
         }
 
         public void Update(World world)
@@ -45,6 +47,7 @@ namespace ECS_Base.Mechanics.UI.Systems
             _segmentedBarSystem.Draw(world, _spriteBatch);
             _heartsSystem.Draw(world, _spriteBatch);
             _progressBarSystem.Draw(world, _spriteBatch);
+            _iconSystem.Draw(world, _spriteBatch);
             _textSystem.Draw(world, _spriteBatch);
             _buttonSystem.Draw(world, _spriteBatch, _defaultFont);
 

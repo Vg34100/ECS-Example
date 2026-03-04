@@ -39,6 +39,7 @@ namespace ECS_Base.GameConfigs
             systemManager.AddSystem(new TopDownMovementSystem()); // Top-down instead of platformer
             systemManager.AddSystem(new EnemyAISystem());
             systemManager.AddSystem(new ProjectileSystem());
+            systemManager.AddSystem(new KnockbackSystem());
             systemManager.AddSystem(new MovementSystem());
 
             // Collision systems
@@ -109,7 +110,7 @@ namespace ECS_Base.GameConfigs
             // UI: hearts (3 hearts with half-health units)
             var ui = world.CreateEntity();
             world.AddComponent(ui, new UIHeartsComponent(
-                position: new Vector2(16, 16),
+                position: new Vector2(48, 16),
                 targetEntityId: player.Id,
                 unitsPerHeart: 2,
                 heartSize: 16,
@@ -119,6 +120,7 @@ namespace ECS_Base.GameConfigs
             var rupeesText = world.CreateEntity();
             world.AddComponent(rupeesText, new UITextComponent(null, "Rupees: 0", new Vector2(16, 36)));
             world.AddComponent(rupeesText, new UICounterComponent(player.Id, CounterType.Rupees, "Rupees: "));
+            world.AddComponent(rupeesText, new UIIconComponent(new Vector2(16, 36), UIIconType.Rupee, Color.LawnGreen, 2));
 
             // Spawn melee enemies (chase only)
             SpawnEnemy(world, 200, 150, canShoot: false);
@@ -179,8 +181,9 @@ namespace ECS_Base.GameConfigs
                 canShoot ? Color.Orange : Color.Red, // Orange for shooters
                 new Vector2(14, 14)
             ));
-            world.AddComponent(enemy, new StatsComponent(maxHealth: 30, attack: 5f, defense: 0f, speed: 1f));
+            world.AddComponent(enemy, new StatsComponent(maxHealth: 6, attack: 5f, defense: 0f, speed: 1f));
             world.AddComponent(enemy, new ContactDamageComponent(damage: 1));
+            world.AddComponent(enemy, new DamageFlashOnHitComponent(flashColor: Color.White, duration: 0.25f));
         }
 
         private void SpawnRupee(World world, Vector2 position)
