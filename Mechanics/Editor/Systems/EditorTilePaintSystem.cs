@@ -33,6 +33,12 @@ namespace ECS_Base.Mechanics.Editor.Systems
                 return;
             }
 
+            if (IsHoveringUI(world))
+            {
+                _previous = mouse;
+                return;
+            }
+
             var level = FindActiveLevel(world, state.ActiveLevelId);
             if (level == null || level.TileData == null)
             {
@@ -64,6 +70,16 @@ namespace ECS_Base.Mechanics.Editor.Systems
             }
 
             _previous = mouse;
+        }
+
+        private static bool IsHoveringUI(World world)
+        {
+            foreach (var entity in world.Query<EditorUIStateComponent>())
+            {
+                var ui = world.GetComponent<EditorUIStateComponent>(entity);
+                return ui.IsHoveringUI;
+            }
+            return false;
         }
 
         private static ECS_Base.LevelData.Level FindActiveLevel(World world, string levelId)

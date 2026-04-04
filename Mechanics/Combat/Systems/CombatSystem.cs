@@ -145,6 +145,8 @@ namespace ECS_Base.Mechanics.Combat.Systems
                     {
                         if (world.HasComponent<ECS_Base.Mechanics.Stats.Components.RespawnComponent>(entity))
                             continue;
+                        if (world.HasComponent<DeathDespawnComponent>(entity))
+                            continue;
 
                         entitiesToRemove.Add(entity);
 

@@ -8,6 +8,7 @@ using Microsoft.Xna.Framework;
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using System.IO;
 
 namespace ECS_Base.Mechanics.Combat.Systems
 {
@@ -16,8 +17,12 @@ namespace ECS_Base.Mechanics.Combat.Systems
     /// </summary>
     public class EnemyAISystem
     {
+        private float _slimeDebugTimer;
+
         public void Update(World world, float deltaTime)
         {
+            _slimeDebugTimer -= deltaTime;
+
             // Find player position
             var playerEntity = world.GetEntities()
                 .FirstOrDefault(e => world.HasComponent<PlayerComponent>(e));
@@ -75,8 +80,8 @@ namespace ECS_Base.Mechanics.Combat.Systems
                     separationForce /= nearbyEnemies; // Average
                 }
 
-                // AI behavior
                 Vector2 desiredVelocity = Vector2.Zero;
+                bool isSlime = world.TryGetComponent<SlimeMovementComponent>(entity, out var slime);
 
                 if (distanceToPlayer < enemy.ChaseRange)
                 {
@@ -92,24 +97,91 @@ namespace ECS_Base.Mechanics.Combat.Systems
                     if (distanceToPlayer > enemy.StopDistance)
                     {
                         toPlayer.Normalize();
-                        desiredVelocity = toPlayer * enemy.ChaseSpeed;
+                        if (isSlime)
+                        {
+                            if (slime.HopTimeRemaining > 0f)
+                            {
+                                slime.HopTimeRemaining -= deltaTime;
+                                desiredVelocity = slime.HopDirection * (enemy.ChaseSpeed * slime.LungeSpeedMultiplier);
+                            }
+                            else
+                            {
+                                slime.PauseTimeRemaining -= deltaTime;
+                                desiredVelocity = Vector2.Zero;
+
+                                if (slime.PauseTimeRemaining <= 0f)
+                                {
+                                    slime.HopDirection = toPlayer;
+                                    slime.HopTimeRemaining = slime.HopDuration;
+                                    slime.PauseTimeRemaining = slime.PauseDuration;
+                                    desiredVelocity = slime.HopDirection * (enemy.ChaseSpeed * slime.LungeSpeedMultiplier);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            desiredVelocity = toPlayer * enemy.ChaseSpeed;
+                        }
                     }
                     else
                     {
                         // Stop moving when close enough
                         desiredVelocity = Vector2.Zero;
+                        if (isSlime)
+                        {
+                            slime.HopTimeRemaining = 0f;
+                            slime.PauseTimeRemaining = 0f;
+                        }
                     }
                 }
+                else if (isSlime)
+                {
+                    slime.HopTimeRemaining = 0f;
+                    slime.PauseTimeRemaining = 0f;
+                }
 
-                // Combine chase + separation
-                // Separation has higher priority when enemies are very close
-                float separationWeight = Math.Min(nearbyEnemies * 0.5f, 1.5f);
-                velocity.Value = desiredVelocity + (separationForce * enemy.ChaseSpeed * separationWeight);
+                if (isSlime)
+                {
+                    // Slime movement should read as a clear wait->burst loop, not steering blended with avoidance.
+                    velocity.Value = desiredVelocity;
+                }
+                else
+                {
+                    // Combine chase + separation
+                    // Separation has higher priority when enemies are very close
+                    float separationWeight = Math.Min(nearbyEnemies * 0.5f, 1.5f);
+                    velocity.Value = desiredVelocity + (separationForce * enemy.ChaseSpeed * separationWeight);
+                }
 
                 // Update components
                 world.AddComponent(entity, enemy);
                 world.AddComponent(entity, velocity);
+                if (isSlime)
+                {
+                    world.AddComponent(entity, slime);
+
+                    if (_slimeDebugTimer <= 0f)
+                    {
+                        string message =
+                            $"SlimeDebug entity={entity.Id} pos=({position.Value.X:0},{position.Value.Y:0}) " +
+                            $"dist={distanceToPlayer:0.0} desired=({desiredVelocity.X:0.0},{desiredVelocity.Y:0.0}) " +
+                            $"final=({velocity.Value.X:0.0},{velocity.Value.Y:0.0}) " +
+                            $"hop={slime.HopTimeRemaining:0.00} pause={slime.PauseTimeRemaining:0.00}";
+                        Console.WriteLine(message);
+                        try
+                        {
+                            var debugPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "debug.txt");
+                            File.AppendAllText(debugPath, message + Environment.NewLine);
+                        }
+                        catch
+                        {
+                        }
+                    }
+                }
             }
+
+            if (_slimeDebugTimer <= 0f)
+                _slimeDebugTimer = 1.0f;
         }
 
         private void ShootAtPlayer(World world, Vector2 enemyPosition, Vector2 directionToPlayer)

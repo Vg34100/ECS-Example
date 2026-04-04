@@ -10,12 +10,9 @@ namespace ECS_Base.Mechanics.Rendering.Systems
     {
         public void Update(World world, float deltaTime)
         {
-            foreach (var entity in world.Query<DamageFlashComponent, ShapeComponent>())
+            foreach (var entity in world.Query<DamageFlashComponent>())
             {
                 if (!world.TryGetComponent<DamageFlashComponent>(entity, out var flash))
-                    continue;
-
-                if (!world.TryGetComponent<ShapeComponent>(entity, out var shape))
                     continue;
 
                 flash.TimeRemaining -= deltaTime;
@@ -27,13 +24,34 @@ namespace ECS_Base.Mechanics.Rendering.Systems
                     flash.FlashOn = !flash.FlashOn;
                 }
 
-                shape.Color = flash.FlashOn ? flash.FlashColor : flash.OriginalColor;
-                world.AddComponent(entity, shape);
+                var currentColor = flash.FlashOn ? flash.FlashColor : flash.OriginalColor;
+
+                if (world.TryGetComponent<ShapeComponent>(entity, out var shape))
+                {
+                    shape.Color = currentColor;
+                    world.AddComponent(entity, shape);
+                }
+
+                if (world.TryGetComponent<SpriteComponent>(entity, out var sprite))
+                {
+                    sprite.Tint = currentColor;
+                    world.AddComponent(entity, sprite);
+                }
 
                 if (flash.TimeRemaining <= 0f)
                 {
-                    shape.Color = flash.OriginalColor;
-                    world.AddComponent(entity, shape);
+                    if (world.TryGetComponent<ShapeComponent>(entity, out var finalShape))
+                    {
+                        finalShape.Color = flash.OriginalColor;
+                        world.AddComponent(entity, finalShape);
+                    }
+
+                    if (world.TryGetComponent<SpriteComponent>(entity, out var finalSprite))
+                    {
+                        finalSprite.Tint = flash.OriginalColor;
+                        world.AddComponent(entity, finalSprite);
+                    }
+
                     world.RemoveComponent<DamageFlashComponent>(entity);
                 }
                 else

@@ -2,3 +2,7 @@ docs/history/
 obj/
 bin/
 .vs/
+Content/obj/
+output.txt
+debug.txt
+.vscode/

@@ -12,6 +12,7 @@ using ECS_Base.Mechanics.Combat.Components;
 using ECS_Base.Mechanics.Platformer.Components;
 using ECS_Base.Mechanics.UI.Components;
 using ECS_Base.Mechanics.Progression.Components;
+using ECS_Base.Mechanics.Animation.Components;
 using ECS_Base.LevelData;
 using Microsoft.Xna.Framework;
 using System.Collections.Generic;
@@ -294,16 +295,24 @@ namespace ECS_Base.Mechanics.Level.Systems
             ));
             var kind = GetKind(data);
             bool canShoot = string.Equals(kind, "Shooter", System.StringComparison.OrdinalIgnoreCase);
+            bool isSlime = string.Equals(kind, "Chaser", System.StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(kind, "Slime", System.StringComparison.OrdinalIgnoreCase);
             world.AddComponent(enemyEntity, new EnemyComponent(
                 chaseRange: 300f,
-                stopDistance: 28f,
-                chaseSpeed: 60f,
-                separationRadius: 20f,
+                stopDistance: isSlime ? 12f : 28f,
+                chaseSpeed: isSlime ? 28f : 60f,
+                separationRadius: isSlime ? 0f : 20f,
                 canShoot: canShoot
             ));
             world.AddComponent(enemyEntity, new StatsComponent(maxHealth: 2, attack: 1f, defense: 0f, speed: 1f));
             world.AddComponent(enemyEntity, new DamageFlashOnHitComponent(flashColor: Color.White, duration: 0.25f));
             world.AddComponent(enemyEntity, new ContactDamageComponent(damage: 1f));
+            if (!canShoot && isSlime)
+            {
+                world.AddComponent(enemyEntity, new TopdownSlimeVisualComponent());
+                world.AddComponent(enemyEntity, new SlimeMovementComponent(hopDuration: 0.20f, pauseDuration: 0.35f, lungeSpeedMultiplier: 3.0f));
+                world.AddComponent(enemyEntity, new DeathDespawnComponent(0.3f));
+            }
         }
 
         private void SpawnPlatformerPickup(World world, Vector2 position, LevelData.LevelEntity data)

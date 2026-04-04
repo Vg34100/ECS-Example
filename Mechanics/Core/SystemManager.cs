@@ -65,7 +65,10 @@ namespace ECS_Base.Mechanics.Core
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"Error updating system {system.GetType().Name}: {ex.Message}");
+                    var actual = ex.InnerException ?? ex;
+                    var message = $"Error updating system {system.GetType().Name}: {actual.Message}";
+                    System.Diagnostics.Debug.WriteLine(message);
+                    Console.WriteLine(message);
                 }
             }
         }
@@ -80,7 +83,10 @@ namespace ECS_Base.Mechanics.Core
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"Error drawing system {system.GetType().Name}: {ex.Message}");
+                    var actual = ex.InnerException ?? ex;
+                    var message = $"Error drawing system {system.GetType().Name}: {actual.Message}";
+                    System.Diagnostics.Debug.WriteLine(message);
+                    Console.WriteLine(message);
                 }
             }
         }

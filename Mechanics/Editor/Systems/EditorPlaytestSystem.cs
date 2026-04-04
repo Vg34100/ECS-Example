@@ -28,6 +28,7 @@ namespace ECS_Base.Mechanics.Editor.Systems
             if (keyboard.IsKeyDown(Keys.F5) && !_previous.IsKeyDown(Keys.F5))
             {
                 SaveActiveLevel(world);
+                SetSaveToast(world, 1.2f);
                 _game.RequestRestart();
             }
             _previous = keyboard;
@@ -53,6 +54,17 @@ namespace ECS_Base.Mechanics.Editor.Systems
 
                 var levelDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "../../../Levels/ldtk-programmatic/simplified", levelComp.LevelData.Identifier);
                 EditorLevelSerializer.SaveLevel(levelComp.LevelData, levelDir);
+                return;
+            }
+        }
+
+        private static void SetSaveToast(World world, float duration)
+        {
+            foreach (var entity in world.Query<EditorUIStateComponent>())
+            {
+                var uiState = world.GetComponent<EditorUIStateComponent>(entity);
+                uiState.SaveToastTime = duration;
+                world.AddComponent(entity, uiState);
                 return;
             }
         }

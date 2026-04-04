@@ -18,6 +18,7 @@ using ECS_Base.Mechanics.UI.Components;
 using ECS_Base.Mechanics.Progression.Components;
 using ECS_Base.Mechanics.Progression.Systems;
 using ECS_Base.Mechanics.Rendering.Systems;
+using ECS_Base.Mechanics.Animation.Systems;
 
 namespace ECS_Base.GameConfigs
 {
@@ -34,10 +35,13 @@ namespace ECS_Base.GameConfigs
 
         public void Initialize(Game1 game, World world, SystemManager systemManager)
         {
+            game.SpriteSystem = new SpriteSystem(null);
             // Systems in order
             systemManager.AddSystem(new InputSystem());
             systemManager.AddSystem(new TopDownMovementSystem()); // Top-down instead of platformer
             systemManager.AddSystem(new EnemyAISystem());
+            systemManager.AddSystem(new TopdownSlimeSpriteSystem(game.GraphicsDevice));
+            systemManager.AddSystem(new AnimationSystem());
             var statsSystem = new StatsSystem();
             systemManager.AddSystem(statsSystem);
             var meleeSystem = new MeleeCombatSystem(statsSystem);
@@ -223,10 +227,10 @@ namespace ECS_Base.GameConfigs
             world.AddComponent(enemy, new PositionComponent(x, y));
             world.AddComponent(enemy, new VelocityComponent());
             world.AddComponent(enemy, new EnemyComponent(
-                chaseSpeed: canShoot ? 30f : 45f, // Shooters move slower
+                chaseSpeed: canShoot ? 30f : 28f, // Slimes move slower than normal chasers
                 chaseRange: 300f,
-                stopDistance: canShoot ? 90f : 20f, // Shooters keep distance
-                separationRadius: 25f,
+                stopDistance: canShoot ? 90f : 12f, // Shooters keep distance
+                separationRadius: canShoot ? 25f : 0f,
                 canShoot: canShoot,
                 shootRange: 180f,
                 shootCooldown: 3.0f
@@ -240,6 +244,11 @@ namespace ECS_Base.GameConfigs
                 canShoot ? Color.Orange : Color.Red, // Orange for shooters
                 new Vector2(14, 14)
             ));
+            if (!canShoot)
+            {
+                world.AddComponent(enemy, new TopdownSlimeVisualComponent());
+                world.AddComponent(enemy, new SlimeMovementComponent(hopDuration: 0.20f, pauseDuration: 0.35f, lungeSpeedMultiplier: 3.0f));
+            }
             world.AddComponent(enemy, new StatsComponent(maxHealth: 6, attack: 5f, defense: 0f, speed: 1f));
             world.AddComponent(enemy, new ContactDamageComponent(damage: 1));
             world.AddComponent(enemy, new DamageFlashOnHitComponent(flashColor: Color.White, duration: 0.25f));

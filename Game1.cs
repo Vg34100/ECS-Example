@@ -46,12 +46,24 @@ namespace ECS_Base
 
         private void Restart()
         {
+            _systemManager?.Clear();
+
             // Clear existing entities
-            var entities = _world.GetEntities().ToList();
-            foreach (var entity in entities)
+            if (_world != null)
             {
-                _world.RemoveEntity(entity);
+                var entities = _world.GetEntities().ToList();
+                foreach (var entity in entities)
+                {
+                    _world.RemoveEntity(entity);
+                }
             }
+
+            CameraSystem = null;
+            LevelManagerSystem = null;
+            CollisionSystem = null;
+            SpriteSystem = null;
+            _uiSystem = null;
+
             Initialize();
             LoadContent();
         }
@@ -84,19 +96,27 @@ namespace ECS_Base
             {
                 System.Console.WriteLine("Adding render systems...");
 
-                // Create and add sprite system if config requested it
-                if (SpriteSystem != null)
-                {
-                    // Re-create with actual SpriteBatch
-                    SpriteSystem = new SpriteSystem(_spriteBatch);
-                    _systemManager.AddSystem(SpriteSystem);
-                }
+                _systemManager.RemoveSystem<LevelTilesetLoaderSystem>();
+                _systemManager.RemoveSystem<LevelRenderSystem>();
+                _systemManager.RemoveSystem<RenderSystem>();
+                _systemManager.RemoveSystem<SpriteSystem>();
+                _systemManager.RemoveSystem<EditorOverlaySystem>();
+                _systemManager.RemoveSystem<EditorUISystem>();
+                _systemManager.RemoveSystem<WorldIconSystem>();
+                _systemManager.RemoveSystem<RotatedRectSystem>();
+                _systemManager.RemoveSystem<UISystem>();
 
                 _systemManager.AddSystem(new LevelTilesetLoaderSystem(GraphicsDevice));
                 _systemManager.AddSystem(new LevelRenderSystem(_spriteBatch, CameraSystem));
                 var renderSystem = new RenderSystem(_spriteBatch, GraphicsDevice, CameraSystem);
                 _systemManager.AddSystem(renderSystem);
+                if (SpriteSystem != null)
+                {
+                    SpriteSystem = new SpriteSystem(_spriteBatch);
+                    _systemManager.AddSystem(SpriteSystem);
+                }
                 _systemManager.AddSystem(new EditorOverlaySystem(GraphicsDevice, _spriteBatch, _font));
+                _systemManager.AddSystem(new EditorUISystem(GraphicsDevice, _spriteBatch, _font));
                 _systemManager.AddSystem(new WorldIconSystem(_spriteBatch, GraphicsDevice, CameraSystem));
                 _systemManager.AddSystem(new RotatedRectSystem(_spriteBatch, GraphicsDevice, CameraSystem));
 

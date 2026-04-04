@@ -15,6 +15,7 @@ using ECS_Base.Mechanics.Progression.Systems;
 using ECS_Base.Mechanics.Rendering.Components;
 using ECS_Base.Mechanics.Editor.Components;
 using ECS_Base.Mechanics.Editor.Systems;
+using ECS_Base.Mechanics.Animation.Systems;
 
 namespace ECS_Base.GameConfigs
 {
@@ -27,9 +28,12 @@ namespace ECS_Base.GameConfigs
 
         public void Initialize(Game1 game, World world, SystemManager systemManager)
         {
+            game.SpriteSystem = new SpriteSystem(null);
             systemManager.AddSystem(new InputSystem());
             systemManager.AddSystem(new TopDownMovementSystem());
             systemManager.AddSystem(new EnemyAISystem());
+            systemManager.AddSystem(new TopdownSlimeSpriteSystem(game.GraphicsDevice));
+            systemManager.AddSystem(new AnimationSystem());
             var statsSystem = new StatsSystem();
             systemManager.AddSystem(statsSystem);
             var meleeSystem = new MeleeCombatSystem(statsSystem);
@@ -53,6 +57,7 @@ namespace ECS_Base.GameConfigs
 
             systemManager.AddSystem(new InvulnerabilitySystem());
             systemManager.AddSystem(new RespawnSystem());
+            systemManager.AddSystem(new DeathDespawnSystem());
             systemManager.AddSystem(new DamageFlashSystem());
             systemManager.AddSystem(new CombatSystem(statsSystem));
             systemManager.AddSystem(new CollectibleSystem());

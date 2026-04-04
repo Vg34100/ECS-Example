@@ -66,6 +66,19 @@
         "customFields": {
           "Kind": "Goomba"
         }
+      },
+      {
+        "id": "Enemy",
+        "iid": "cddb0cb0-435e-4ac4-950a-67a948fbd549",
+        "layer": "Entities",
+        "x": 272,
+        "y": 224,
+        "width": 16,
+        "height": 16,
+        "color": 0,
+        "customFields": {
+          "Kind": "Goomba"
+        }
       }
     ],
     "Pickup": [
@@ -172,6 +185,97 @@
         "customFields": {
           "Kind": "Mushroom"
         }
+      },
+      {
+        "id": "Pickup",
+        "iid": "320f6740-07e2-4e50-973d-de42bfc2772c",
+        "layer": "Entities",
+        "x": 320,
+        "y": 208,
+        "width": 16,
+        "height": 16,
+        "color": 0,
+        "customFields": {
+          "Kind": "Coin"
+        }
+      },
+      {
+        "id": "Pickup",
+        "iid": "a76b6bce-4bb6-4d52-a038-9018a64a6894",
+        "layer": "Entities",
+        "x": 352,
+        "y": 208,
+        "width": 16,
+        "height": 16,
+        "color": 0,
+        "customFields": {
+          "Kind": "Coin"
+        }
+      },
+      {
+        "id": "Pickup",
+        "iid": "bb43a1bb-2e00-4c7d-bbca-e9468ed1c679",
+        "layer": "Entities",
+        "x": 384,
+        "y": 208,
+        "width": 16,
+        "height": 16,
+        "color": 0,
+        "customFields": {
+          "Kind": "Coin"
+        }
+      },
+      {
+        "id": "Pickup",
+        "iid": "0b059639-39c9-48c9-8a9f-cfee523128f2",
+        "layer": "Entities",
+        "x": 512,
+        "y": 80,
+        "width": 16,
+        "height": 16,
+        "color": 0,
+        "customFields": {
+          "Kind": "Star"
+        }
+      },
+      {
+        "id": "Pickup",
+        "iid": "e934b5a6-3f86-4f27-930d-aebb7024ce15",
+        "layer": "Entities",
+        "x": 1024,
+        "y": 176,
+        "width": 16,
+        "height": 16,
+        "color": 0,
+        "customFields": {
+          "Kind": "Coin"
+        }
+      },
+      {
+        "id": "Pickup",
+        "iid": "563f15a8-4da3-4ff5-b8f4-ddab59b78a12",
+        "layer": "Entities",
+        "x": 1024,
+        "y": 144,
+        "width": 16,
+        "height": 16,
+        "color": 0,
+        "customFields": {
+          "Kind": "Coin"
+        }
+      },
+      {
+        "id": "Pickup",
+        "iid": "38fb7cd5-6fbf-4471-8a19-bdce1e521ae7",
+        "layer": "Entities",
+        "x": 1024,
+        "y": 96,
+        "width": 16,
+        "height": 16,
+        "color": 0,
+        "customFields": {
+          "Kind": "Coin"
+        }
       }
     ],
     "Hazard": [
@@ -180,6 +284,19 @@
         "iid": "spike-1",
         "layer": "Entities",
         "x": 928,
+        "y": 224,
+        "width": 16,
+        "height": 16,
+        "color": 0,
+        "customFields": {
+          "Kind": "Spike"
+        }
+      },
+      {
+        "id": "Hazard",
+        "iid": "6314e9bf-c184-4f7b-ac9a-1b4dad765143",
+        "layer": "Entities",
+        "x": 784,
         "y": 224,
         "width": 16,
         "height": 16,

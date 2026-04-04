@@ -51,6 +51,7 @@ namespace ECS_Base.Mechanics.Editor.Systems
 
             var levelDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "../../../Levels/ldtk-programmatic/simplified", level.Identifier);
             EditorLevelSerializer.SaveLevel(level, levelDir);
+            SetSaveToast(world, 1.2f);
             _previous = keyboard;
         }
 
@@ -65,6 +66,17 @@ namespace ECS_Base.Mechanics.Editor.Systems
                     return levelComp.LevelData;
             }
             return null;
+        }
+
+        private static void SetSaveToast(World world, float duration)
+        {
+            foreach (var entity in world.Query<EditorUIStateComponent>())
+            {
+                var uiState = world.GetComponent<EditorUIStateComponent>(entity);
+                uiState.SaveToastTime = duration;
+                world.AddComponent(entity, uiState);
+                return;
+            }
         }
     }
 }

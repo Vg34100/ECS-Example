@@ -1,7 +1,0 @@
-Starting with configuration: Simple Platformer Test
-SimplePlatformerTest: Created player and test platforms
-=== LoadContent Started ===
-Adding render systems...
-=== System Info ===
-=== Component Stats ===
-Total entities: 7

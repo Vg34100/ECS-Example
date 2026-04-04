@@ -5,6 +5,7 @@ using ECS_Base.Mechanics.Rendering.Components;
 using ECS_Base.Mechanics.Progression.Components;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Xna.Framework;
 
 namespace ECS_Base.Mechanics.Stats.Systems
 {
@@ -197,7 +198,16 @@ namespace ECS_Base.Mechanics.Stats.Systems
             if (!world.TryGetComponent<DamageFlashOnHitComponent>(target, out var onHit))
                 return;
 
-            if (!world.TryGetComponent<ShapeComponent>(target, out var shape))
+            Color originalColor;
+            if (world.TryGetComponent<SpriteComponent>(target, out var sprite))
+            {
+                originalColor = sprite.Tint;
+            }
+            else if (world.TryGetComponent<ShapeComponent>(target, out var shape))
+            {
+                originalColor = shape.Color;
+            }
+            else
                 return;
 
             if (world.TryGetComponent<DamageFlashComponent>(target, out var existing))
@@ -209,7 +219,7 @@ namespace ECS_Base.Mechanics.Stats.Systems
             }
 
             world.AddComponent(target, new DamageFlashComponent(
-                originalColor: shape.Color,
+                originalColor: originalColor,
                 flashColor: onHit.FlashColor,
                 duration: onHit.Duration
             ));

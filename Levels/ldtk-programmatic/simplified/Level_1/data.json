@@ -16,118 +16,289 @@
   "entities": {
     "Player": [
       {
-        "Id": "Player",
-        "Iid": "player-1",
-        "Layer": "Entities",
-        "X": 240,
-        "Y": 160,
-        "Width": 16,
-        "Height": 16,
-        "Color": 3128910,
-        "CustomFields": {}
+        "id": "Player",
+        "iid": "player-1",
+        "layer": "Entities",
+        "x": 240,
+        "y": 160,
+        "width": 16,
+        "height": 16,
+        "color": 3128910,
+        "customFields": {}
       }
     ],
     "Enemy": [
       {
-        "Id": "Enemy",
-        "Iid": "enemy-1",
-        "Layer": "Entities",
-        "X": 320,
-        "Y": 320,
-        "Width": 16,
-        "Height": 16,
-        "Color": 14107459,
-        "CustomFields": {
+        "id": "Enemy",
+        "iid": "enemy-3",
+        "layer": "Entities",
+        "x": 160,
+        "y": 520,
+        "width": 16,
+        "height": 16,
+        "color": 14107459,
+        "customFields": {}
+      },
+      {
+        "id": "Enemy",
+        "iid": "dae066e3-3e4e-4666-8ce9-53258e221547",
+        "layer": "Entities",
+        "x": 944,
+        "y": 784,
+        "width": 16,
+        "height": 16,
+        "color": 0,
+        "customFields": {
+          "Kind": "Chaser"
+        }
+      },
+      {
+        "id": "Enemy",
+        "iid": "8c7f13d5-6550-45b1-9e9b-18d3b1005d5e",
+        "layer": "Entities",
+        "x": 576,
+        "y": 944,
+        "width": 16,
+        "height": 16,
+        "color": 0,
+        "customFields": {
           "Kind": "Shooter"
         }
       },
       {
-        "Id": "Enemy",
-        "Iid": "enemy-2",
-        "Layer": "Entities",
-        "X": 400,
-        "Y": 240,
-        "Width": 16,
-        "Height": 16,
-        "Color": 14107459,
-        "CustomFields": {}
+        "id": "Enemy",
+        "iid": "3b234498-4139-40be-bf2f-406b9dc3a091",
+        "layer": "Entities",
+        "x": 480,
+        "y": 944,
+        "width": 16,
+        "height": 16,
+        "color": 0,
+        "customFields": {
+          "Kind": "Shooter"
+        }
       },
       {
-        "Id": "Enemy",
-        "Iid": "enemy-3",
-        "Layer": "Entities",
-        "X": 160,
-        "Y": 520,
-        "Width": 16,
-        "Height": 16,
-        "Color": 14107459,
-        "CustomFields": {}
+        "id": "Enemy",
+        "iid": "f862a45d-9127-4987-ba98-2edb230e15b6",
+        "layer": "Entities",
+        "x": 464,
+        "y": 240,
+        "width": 16,
+        "height": 16,
+        "color": 0,
+        "customFields": {
+          "Kind": "Slime"
+        }
+      },
+      {
+        "id": "Enemy",
+        "iid": "bc84b278-a9cc-4d2c-8283-52be0667c46a",
+        "layer": "Entities",
+        "x": 560,
+        "y": 96,
+        "width": 16,
+        "height": 16,
+        "color": 0,
+        "customFields": {
+          "Kind": "Slime"
+        }
+      },
+      {
+        "id": "Enemy",
+        "iid": "6078c6e5-c78f-4ea7-b7a0-908999833b40",
+        "layer": "Entities",
+        "x": 720,
+        "y": 128,
+        "width": 16,
+        "height": 16,
+        "color": 0,
+        "customFields": {
+          "Kind": "Slime"
+        }
       }
     ],
     "Pickup": [
       {
-        "Id": "Pickup",
-        "Iid": "rupee-1",
-        "Layer": "Entities",
-        "X": 200,
-        "Y": 200,
-        "Width": 16,
-        "Height": 16,
-        "Color": 0,
-        "CustomFields": {
+        "id": "Pickup",
+        "iid": "rupee-1",
+        "layer": "Entities",
+        "x": 200,
+        "y": 200,
+        "width": 16,
+        "height": 16,
+        "color": 0,
+        "customFields": {
           "Kind": "Rupee"
         }
       },
       {
-        "Id": "Pickup",
-        "Iid": "rupee-2",
-        "Layer": "Entities",
-        "X": 520,
-        "Y": 200,
-        "Width": 16,
-        "Height": 16,
-        "Color": 0,
-        "CustomFields": {
+        "id": "Pickup",
+        "iid": "rupee-2",
+        "layer": "Entities",
+        "x": 520,
+        "y": 200,
+        "width": 16,
+        "height": 16,
+        "color": 0,
+        "customFields": {
           "Kind": "Rupee"
         }
       },
       {
-        "Id": "Pickup",
-        "Iid": "heart-1",
-        "Layer": "Entities",
-        "X": 360,
-        "Y": 180,
-        "Width": 16,
-        "Height": 16,
-        "Color": 0,
-        "CustomFields": {
+        "id": "Pickup",
+        "iid": "heart-1",
+        "layer": "Entities",
+        "x": 360,
+        "y": 180,
+        "width": 16,
+        "height": 16,
+        "color": 0,
+        "customFields": {
           "Kind": "Heart"
         }
       },
       {
-        "Id": "Pickup",
-        "Iid": "arrow-1",
-        "Layer": "Entities",
-        "X": 256,
-        "Y": 384,
-        "Width": 16,
-        "Height": 16,
-        "Color": 0,
-        "CustomFields": {
+        "id": "Pickup",
+        "iid": "arrow-1",
+        "layer": "Entities",
+        "x": 256,
+        "y": 384,
+        "width": 16,
+        "height": 16,
+        "color": 0,
+        "customFields": {
           "Kind": "Arrow"
         }
       },
       {
-        "Id": "Pickup",
-        "Iid": "bomb-1",
-        "Layer": "Entities",
-        "X": 448,
-        "Y": 384,
-        "Width": 16,
-        "Height": 16,
-        "Color": 0,
-        "CustomFields": {
+        "id": "Pickup",
+        "iid": "bomb-1",
+        "layer": "Entities",
+        "x": 448,
+        "y": 384,
+        "width": 16,
+        "height": 16,
+        "color": 0,
+        "customFields": {
           "Kind": "Bomb"
+        }
+      },
+      {
+        "id": "Pickup",
+        "iid": "ae7f139c-6d8b-4fc9-a212-58ad3454d2d0",
+        "layer": "Entities",
+        "x": 752,
+        "y": 192,
+        "width": 16,
+        "height": 16,
+        "color": 0,
+        "customFields": {
+          "Kind": "Rupee"
+        }
+      },
+      {
+        "id": "Pickup",
+        "iid": "81113e3e-5617-400c-a4ad-594f04c750a1",
+        "layer": "Entities",
+        "x": 960,
+        "y": 112,
+        "width": 16,
+        "height": 16,
+        "color": 0,
+        "customFields": {
+          "Kind": "Rupee"
+        }
+      },
+      {
+        "id": "Pickup",
+        "iid": "e7f76e05-03c7-4477-ac97-419348218970",
+        "layer": "Entities",
+        "x": 960,
+        "y": 144,
+        "width": 16,
+        "height": 16,
+        "color": 0,
+        "customFields": {
+          "Kind": "Rupee"
+        }
+      },
+      {
+        "id": "Pickup",
+        "iid": "23af3015-2e5e-4460-9f3d-752ea505c900",
+        "layer": "Entities",
+        "x": 960,
+        "y": 176,
+        "width": 16,
+        "height": 16,
+        "color": 0,
+        "customFields": {
+          "Kind": "Rupee"
+        }
+      },
+      {
+        "id": "Pickup",
+        "iid": "3d05686e-d6c8-4e0d-802e-418adc18721c",
+        "layer": "Entities",
+        "x": 960,
+        "y": 224,
+        "width": 16,
+        "height": 16,
+        "color": 0,
+        "customFields": {
+          "Kind": "Rupee"
+        }
+      },
+      {
+        "id": "Pickup",
+        "iid": "ccd4c3ab-5f5f-424c-94b0-44481e2e4a57",
+        "layer": "Entities",
+        "x": 864,
+        "y": 48,
+        "width": 16,
+        "height": 16,
+        "color": 0,
+        "customFields": {
+          "Kind": "Heart"
+        }
+      },
+      {
+        "id": "Pickup",
+        "iid": "7651e839-69d0-4c8a-b68d-a7b559cd7b7e",
+        "layer": "Entities",
+        "x": 928,
+        "y": 400,
+        "width": 16,
+        "height": 16,
+        "color": 0,
+        "customFields": {
+          "Kind": "Bomb"
+        }
+      },
+      {
+        "id": "Pickup",
+        "iid": "f79ef686-7a34-4573-bf0c-f658bc1b7fbd",
+        "layer": "Entities",
+        "x": 832,
+        "y": 416,
+        "width": 16,
+        "height": 16,
+        "color": 0,
+        "customFields": {
+          "Kind": "Bomb"
+        }
+      },
+      {
+        "id": "Pickup",
+        "iid": "94a4b312-6981-4ea3-ae5b-66cb2c69553d",
+        "layer": "Entities",
+        "x": 912,
+        "y": 416,
+        "width": 16,
+        "height": 16,
+        "color": 0,
+        "customFields": {
+          "Kind": "Arrow"
         }
       }
     ],
